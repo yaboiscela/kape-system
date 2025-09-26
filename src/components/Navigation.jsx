@@ -60,14 +60,14 @@ return (
                 </li>
 
                 {/*
-                Customers
+                Staff
+                */}
                 <li>
-                <NavLink to="/customers" className={activeStyle}>
+                <NavLink to="/staff" className={activeStyle}>
                     <IoPeopleOutline size={30} className="absolute" />
-                    <span className={spanStyle}>Customers</span>
+                    <span className={spanStyle}>Staff</span>
                 </NavLink>
                 </li>
-                */}
 
                 {/* Products */}
                 <li>

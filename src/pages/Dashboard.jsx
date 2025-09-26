@@ -13,7 +13,7 @@ export default function Dashboard(isMinimized) {
                 <div className="flex justify-between items-center">
                     <div>
                     <div className="text-2xl font-bold">10</div>
-                    <div className="text-[#7f5539]">Customers</div>
+                    <div className="text-[#7f5539]">Staffs</div>
                     </div>
                     <IoPeopleOutline size={30} className="text-[#7f5539]" />
                 </div>

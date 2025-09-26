@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 
 import Dashboard from "./pages/Dashboard";
-import Customers from "./pages/Customers";
+import Staff from "./pages/Staff";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Cashier from "./pages/Cashier";
@@ -102,7 +102,7 @@ export default function App() {
           <Route path="/" element={<Dashboard 
           isMinimized={isMinimized}
           />} />
-          <Route path="/customers" element={<Customers/>} />
+          <Route path="/staff" element={<Staff/>} />
           <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
           <Route path="/orders" element={<Orders orders={orders} setOrders={setOrders} />} />
           <Route path="/cashier" element={<Cashier categories={categories} products={products} orders={orders} setOrders={setOrders} />} />
