@@ -1,10 +1,60 @@
+import { useState } from "react"
+
 export default function Staff() {
+
+    const [staff, setStaff] = useState([
+        { id: 123890, user: "John", name: "John Doe", role: "Manager"},
+    ])
+
+    const roles = ["Manager", "Barista", "Cashier"]
+
+    const addStaffMember = () => {
+        
+    }
+
     return (
         <div>
             <h1 className="pl-10 text-3xl font-bold text-[#7f5539] mb-6">Staff</h1>
-            <div className="bg-[#f8e7d6] p-6 rounded-lg shadow">
-                <p className="text-[#7f5539]">Staff management features be implemented here.</p>
-            </div>
+            <form className="border p-4 mb-6 rounded shadow-md">
+                <h2 className="text-xl font-semibold mb-4">Add New Staff Member</h2>
+                <div className="mb-4">
+                    <label className="block text-gray-700 mb-2" htmlFor="username">Username</label>
+                    <input className="w-full border border-gray-300 p-2 rounded" type="text" id="username" name="username" />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 mb-2" htmlFor="name">Name</label>
+                    <input className="w-full border border-gray-300 p-2 rounded" type="text" id="name" name="name" />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 mb-2" htmlFor="role">Role</label>
+                    <select className="block border border-gray-300 rounded p-2 w-full text-gray-700" name="" id="">
+                        {roles.map((role) => (
+                            <option key={role} value={role}>{role}</option>
+                        ))}
+                    </select>
+                </div>
+                <button className="bg-[#7f5539] text-white px-4 py-2 mt-4 rounded hover:bg-[#6e4531]">Add Staff Member</button>
+            </form>
+            <table className="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                        <th className="border border-gray-300 px-4 py-2">Username</th>
+                        <th className="border border-gray-300 px-4 py-2">Name</th>
+                        <th className="border border-gray-300 px-4 py-2">Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {staff.map((member) => (
+                        <tr key={member.id}>
+                            <td className="border border-gray-300 px-4 py-2">{member.id}</td>
+                            <td className="border border-gray-300 px-4 py-2">{member.user}</td>
+                            <td className="border border-gray-300 px-4 py-2">{member.name}</td>
+                            <td className="border border-gray-300 px-4 py-2">{member.role}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 }

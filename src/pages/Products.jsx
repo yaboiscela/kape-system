@@ -202,6 +202,17 @@ export default function Products({ products, setProducts, categories, sizes, add
     const filteredSizes = sizes.filter((s) => s.category === selectedCategory);
     const filteredAddons = addons.filter((a) => a.category === selectedCategory);
 
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState(null)
+
+    const handleFileChange = (e) => {
+        const selected = e.target.files[0]
+        if (selected) {
+            setFile(selected)
+            setPreview(URL.createObjectURL(selected))
+        }
+    }
+
     // ----------------- UI -----------------
     return (
         <div>
@@ -216,31 +227,52 @@ export default function Products({ products, setProducts, categories, sizes, add
             onSubmit={handleAddProduct}
             className="my-6 p-4 border rounded shadow-md"
         >
-            <h3 className="text-lg font-semibold mb-3">Add Product</h3>
 
-            <input
-            type="text"
-            name="productName"
-            placeholder="Product Name"
-            className="border rounded p-2 w-full mb-2"
-            required
-            />
+                <div className="mb-4 flex gap-4">
+                    <div>
+                        <h3 className="text-lg font-semibold mb-3">Add Product</h3>
+                        <div>
+                            {/* Product Name */}
+                            <input
+                            type="text"
+                            name="productName"
+                            placeholder="Product Name"
+                            className="border rounded p-2 w-full mb-2"
+                            required
+                            />
 
-            {/* Category Selection */}
-            <select
-            name="category"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border rounded p-2 w-full mb-4"
-            required
-            >
-            <option value="">Select Category</option>
-            {categories.map((cat, idx) => (
-                <option key={idx} value={cat}>
-                {cat}
-                </option>
-            ))}
-            </select>
+                            {/* Category Selection */}
+                            <select
+                            name="category"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="border rounded p-2 w-full mb-4"
+                            required
+                            >
+                            <option value="">Select Category</option>
+                            {categories.map((cat, idx) => (
+                                <option key={idx} value={cat}>
+                                {cat}
+                                </option>
+                            ))}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    {/* Product Image */}
+                    <div>
+                        <label className="block mb-1 font-semibold">Product Image:</label>
+                        <div className="mb-4 relative">
+                            <div className="h-40 w-40 border overflow-hidden">
+                                {preview && (
+                                        <img className="h-full" src={preview} alt="" />
+                                    )}
+                            </div>
+                            <label className="absolute bg-[#b08968] text-white hover:bg-[#7f5539] p-1 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  w-30 cursor-pointer flex" htmlFor="imageFiles">Upload Image</label>
+                            <input id="imageFiles" className="hidden" onChange={handleFileChange} type="file" name="productImage" accept="image/*" />
+                        </div>
+                    </div>
+                </div>
 
             <div className="flex w-full gap-4">
             {/* Pricing Section */}

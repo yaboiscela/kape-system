@@ -8,6 +8,7 @@ export default function Settings({addons, setAddons, categories, setCategories, 
     const [addonMinimize, setAddonMinize] = useState(true)
     const [categoriesMinimize, setCategoriesMinize] = useState(true)
     const [sizesMinimize, setSizesMinize] = useState(true)
+    const [roleMinimize, setRolesMinize] = useState(true)
 
     // ----------------- Categories Logic -----------------
 
@@ -76,6 +77,7 @@ export default function Settings({addons, setAddons, categories, setCategories, 
         <div>
             <h2 className="pl-10 text-3xl font-bold text-[#7f5539] mb-4">Settings</h2>
 
+            <h2 className="mb-2 text-lg font-semibold">Products Settings</h2>
             {/* Categories */}
             <div
             className={`mb-4 rounded-lg transition-all duration-300 overflow-hidden ${
@@ -241,6 +243,8 @@ export default function Settings({addons, setAddons, categories, setCategories, 
                     </ul>
                 </div>
             </div>
+
+            <h2 className="mb-2 mt-6 text-lg font-semibold">Staff Settings</h2>
         </div>
     )
 }
