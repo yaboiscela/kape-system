@@ -1,12 +1,10 @@
 import { useState } from "react"
 
-export default function Staff() {
+export default function Staff({roles}) {
 
     const [staff, setStaff] = useState([
         { id: 123890, user: "John", name: "John Doe", role: "Manager"},
     ])
-
-    const roles = ["Manager", "Barista", "Cashier"]
 
     const addStaffMember = () => {
         
@@ -33,28 +31,31 @@ export default function Staff() {
                         ))}
                     </select>
                 </div>
-                <button className="bg-[#7f5539] text-white px-4 py-2 mt-4 rounded hover:bg-[#6e4531]">Add Staff Member</button>
+                <button className="bg-dark-coffee text-white px-4 py-2 mt-4 rounded hover:bg-coffee transition">Add Staff Member</button>
             </form>
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr>
-                        <th className="border border-gray-300 px-4 py-2">ID</th>
-                        <th className="border border-gray-300 px-4 py-2">Username</th>
-                        <th className="border border-gray-300 px-4 py-2">Name</th>
-                        <th className="border border-gray-300 px-4 py-2">Role</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {staff.map((member) => (
-                        <tr key={member.id}>
-                            <td className="border border-gray-300 px-4 py-2">{member.id}</td>
-                            <td className="border border-gray-300 px-4 py-2">{member.user}</td>
-                            <td className="border border-gray-300 px-4 py-2">{member.name}</td>
-                            <td className="border border-gray-300 px-4 py-2">{member.role}</td>
+
+            <div className="border border-dark-coffee rounded-2xl overflow-x-auto shadow-md">
+                <table className="w-full border-collapse">
+                    <thead className="bg-coffee text-white font-semibold">
+                        <tr>
+                            <th className="px-4 py-2">ID</th>
+                            <th className="px-4 py-2">Username</th>
+                            <th className="px-4 py-2">Name</th>
+                            <th className="px-4 py-2">Role</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="text-center">
+                        {staff.map((member) => (
+                            <tr key={member.id}>
+                                <td className="px-4 py-2">{member.id}</td>
+                                <td className="px-4 py-2">{member.user}</td>
+                                <td className="px-4 py-2">{member.name}</td>
+                                <td className="px-4 py-2">{member.role}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

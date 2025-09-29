@@ -69,4 +69,7 @@
 /* ---------- TAILWIND THEME INTEGRATION ---------- */
 @theme {
   --font-sans: "Fredoka", sans-serif;
+  --color-dark-coffee: #7f5539;
+  --color-coffee: #b08968;
+  --color-oat-milk: #f8e7d6;
 }

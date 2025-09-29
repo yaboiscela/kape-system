@@ -12,7 +12,11 @@ import Settings from "./pages/Settings";
 export default function App() {
 
   const [isMinimized, setIsMinimized] = useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   
+  const [roles, setRoles] = useState(["Manager", "Barista", "Cashier"]);
+
   const defaultProducts = [
     {
       id: 1,
@@ -86,7 +90,7 @@ export default function App() {
     {name: "Slice", category: "Dessert" ,price: 100.00},
   ])
 
-    const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   return (
     <div className="flex font-sans text-black">
@@ -102,11 +106,11 @@ export default function App() {
           <Route path="/" element={<Dashboard 
           isMinimized={isMinimized}
           />} />
-          <Route path="/staff" element={<Staff/>} />
+          <Route path="/staff" element={<Staff roles={roles} />} />
           <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
           <Route path="/orders" element={<Orders orders={orders} setOrders={setOrders} />} />
           <Route path="/cashier" element={<Cashier categories={categories} products={products} orders={orders} setOrders={setOrders} />} />
-          <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} />}/>
+          <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} roles={roles} setRoles={setRoles} />}/>
         </Routes>
       </div>
     </div>

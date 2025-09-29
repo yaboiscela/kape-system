@@ -3,7 +3,7 @@ import { useState } from "react";
 import AddonsItems from "../components/AddonsItems";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function Settings({addons, setAddons, categories, setCategories, sizes, setSizes}){
+export default function Settings({addons, setAddons, categories, setCategories, sizes, setSizes, roles, setRoles }) {
 
     const [addonMinimize, setAddonMinize] = useState(true)
     const [categoriesMinimize, setCategoriesMinize] = useState(true)
@@ -18,10 +18,16 @@ export default function Settings({addons, setAddons, categories, setCategories, 
         e.preventDefault();
         if (!categoryName.trim()) return;
 
-        setCategories((prev) => [
-            ...prev,
-            categoryName.toLowerCase()
-        ])
+        if (categories.find(cat => cat.toLowerCase() === categoryName.toLowerCase())) {
+            alert("Category already exists!")
+            return
+        }
+        else {
+            setCategories((prev) => [
+                ...prev,
+                categoryName.toLowerCase()
+            ])
+        }
         setCategoryName("")
     }
 
@@ -35,13 +41,19 @@ export default function Settings({addons, setAddons, categories, setCategories, 
         e.preventDefault();
         if (!addonName.trim() || !addonPrice.trim()) return;
 
-        setAddons((prev) => [
-        ...prev,
-        {   id: addons.length + 1, 
-            name: addonName.toLowerCase(),
-            category: addonCategory.toLowerCase(),
-            price: parseFloat(addonPrice) },
-        ]);
+        if (addons.find(addon => addon.name.toLowerCase() === addonName.toLowerCase())) {
+            alert("Addon already exists!")
+            return
+        }
+        else {
+            setAddons((prev) => [
+            ...prev,
+            {   id: addons.length + 1, 
+                name: addonName.toLowerCase(),
+                category: addonCategory.toLowerCase(),
+                price: parseFloat(addonPrice) },
+            ]);
+        }
 
         setAddonName("");
         setAddonCategory(categories[0])
@@ -58,20 +70,46 @@ export default function Settings({addons, setAddons, categories, setCategories, 
         e.preventDefault()
         if (!sizeName.trim() || !sizePrice.trim()) return
 
-        setSizes((prev) => [
-            ...prev,
-            {
-                id: sizes.length + 1,
-                name: sizeName.toLowerCase(),
-                category: sizeCategory.toLowerCase(),
-                price: parseFloat(sizePrice)
-            }
-        ])
+        if (sizes.find(size => size.name.toLowerCase() === sizeName.toLowerCase())) {
+            alert("Size already exists!")
+            return
+        }
+        else {
+            setSizes((prev) => [
+                ...prev,
+                {
+                    id: sizes.length + 1,
+                    name: sizeName.toLowerCase(),
+                    category: sizeCategory.toLowerCase(),
+                    price: parseFloat(sizePrice)
+                }
+            ])
+        }
 
         setSizeName("")
         setAddonCategory(categories[0])
         setSizePrice(0)
     }
+
+    // ----------------- Roles Logic -----------------
+    const [roleName, setRoleName] = useState("")
+    
+    const handleAddRole = (e) => {
+        e.preventDefault()
+        if (!roleName.trim()) return
+
+        if (roles.find(role => role.toLowerCase() === roleName.toLowerCase())) {
+            alert("Role already exists!")
+            return
+        }
+        else {
+            setRoles((prev) => [
+                ...prev,
+                roleName.toLowerCase()
+            ])
+        }
+    }
+
 
     return (
         <div>
@@ -201,7 +239,7 @@ export default function Settings({addons, setAddons, categories, setCategories, 
                     <div className={`flex gap-2 mb-2 transition-all duration-300 ${sizesMinimize ? "opacity-0 overflow-hidden" : "opacity-100 h-auto"}`}>
                         <input
                         type="text"
-                        value={addonName}
+                        value={sizeName}
                         onChange={(e) => setSizeName(e.target.value)}
                         placeholder="Size Name"
                         className="border border-[#7f5539] bg-white rounded p-2 flex-1"
@@ -213,7 +251,7 @@ export default function Settings({addons, setAddons, categories, setCategories, 
                         </select>
                         <input
                         type="number"
-                        value={addonPrice}
+                        value={sizePrice}
                         onChange={(e) => setSizePrice(e.target.value)}
                         placeholder="Price"
                         className="border border-[#7f5539] bg-white rounded p-2 w-28"
@@ -245,6 +283,52 @@ export default function Settings({addons, setAddons, categories, setCategories, 
             </div>
 
             <h2 className="mb-2 mt-6 text-lg font-semibold">Staff Settings</h2>
+            <div
+            className={`rounded-lg mb-4 transition-all overflow-hidden ${
+                roleMinimize ? "max-h-[55px] shadow-md" : "max-h-[1000px]"
+            }`}
+            >
+                {/* Add Roles */}
+                <div className="mb-4 bg-[#f8e7d6] rounded-lg shadow-md p-4">
+                    <div className={`flex justify-between items-center transition-all ${roleMinimize ? "" : "mb-2"}`}>
+                        <h4 className="font-semibold text-[#7f5539]">Roles</h4>
+                        <button onClick={() => (setRolesMinize(prev => !prev))}> <IoIosArrowDown className={`transition-all ${roleMinimize ? "rotate-180" : ""}`} /> </button>
+                    </div>
+                    <div className={`flex gap-2 mb-2 transition-all ${roleMinimize ? "opacity-0 overflow-hidden" : "opacity-100 h-auto"}`}>
+                        <input
+                        onChange={(e) => setRoleName(e.target.value)}
+                        type="text"
+                        placeholder="Role Name"
+                        className="border border-[#7f5539] bg-white rounded p-2 flex-1"
+                        />
+                        <button
+                        onClick={handleAddRole}
+                        type="button"
+                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                        >
+                        Add
+                        </button>
+                    </div>
+                </div>
+                {/* Current Roles */}
+                <div className="max-h-120 rounded-lg px-2 overflow-y-auto relative">
+                        <div className="flex justify-between top-0 text-center sticky bg-[#7f5539] shadow-md text-white text-lg font-semibold p-2 rounded-lg">
+                            <h1 className="w-full">Name</h1>
+                            <h1 className="w-full">Action</h1>
+                        </div>
+                    <ul className="space-y-2 py-2">
+                        {roles.map((item) => (
+                            <li className="flex justify-between items-center text-center p-2 rounded-lg bg-[#f8e7d6] shadow-md text-[#7f5539] text-lg">
+                                <h1 className="w-full">{item.charAt(0).toUpperCase() + item.slice(1)}</h1>
+                                <div className="w-full items-center gap-2 flex flex-col">
+                                    <button className="cursor-pointer p-1 border rounded transition-colors bg-blue-100 text-blue-500 hover:text-white hover:bg-blue-500 w-20">edit</button>
+                                    <button className="cursor-pointer p-1 border rounded transition-colors bg-red-100 text-red-500 hover:text-white hover:bg-red-500 w-20">delete</button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </div>
     )
 }
