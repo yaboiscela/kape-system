@@ -225,7 +225,7 @@ export default function Products({ products, setProducts, categories, sizes, add
         {/* Add Product Form */}
         <form
             onSubmit={handleAddProduct}
-            className="my-6 p-4 border rounded shadow-md"
+            className="my-6 p-4 border rounded shadow-md "
         >
 
                 <div className="mb-4 flex gap-4">

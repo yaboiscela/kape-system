@@ -66,6 +66,8 @@ export default function Cashier({ orders, setOrders, products, categories }) {
         );
     };
 
+    const [cartVisible, setCartVisible] = useState(true);``
+
     // ----------------- Modal Toggle -----------------
     const toggleConfirmationModal = () => {
         setIsConfirmationModalOpen(!isConfirmationModalOpen);
@@ -117,13 +119,13 @@ export default function Cashier({ orders, setOrders, products, categories }) {
     };
 
     return (
-        <div className="h-11/12">
+        <div className="rounded-2xl overflow-hidden">
             <h2 className="pl-10 text-3xl font-bold text-[#7f5539] mb-6">Cashier</h2>
-            <div className="flex lg:flex-row gap-4 h-full">
+            <div className="flex flex-col lg:flex-row gap-4 w-full relative">
                 {/* ----------------- Menu Section ----------------- */}
-                <div className="bg-[#e0aa85] w-8/12 rounded-l-2xl flex flex-col gap-4">
+                <div className="bg-[#e0aa85] h-full -z-10 lg:w-8/12 rounded-2xl lg:rounded-l-2xl flex flex-col gap-4">
                     {/* Top Bar */}
-                    <div className="font-semibold sticky py-2 px-4 rounded-tl-lg bg-[#7f5539] flex items-center justify-between">
+                    <div className="font-semibold sticky py-2 px-4 rounded-t-2xl lg:rounded-tl-2xl bg-[#7f5539] flex items-center justify-between">
                         <input
                             className="bg-white w-50 rounded-lg pl-2"
                             type="text"
@@ -149,7 +151,7 @@ export default function Cashier({ orders, setOrders, products, categories }) {
                     </div>
 
                     {/* Product Grid */}
-                    <div className="justify-items-center grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto px-4 gap-4 h-full">
+                    <div className="justify-items-center pb-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 overflow-y-auto h-205 px-4 gap-4">
                         {filteredProducts.length > 0 ? (
                             filteredProducts.map((product) => (
                                 <ProductCard
@@ -170,11 +172,12 @@ export default function Cashier({ orders, setOrders, products, categories }) {
                 </div>
 
                 {/* ----------------- Cart Section ----------------- */}
-                <div className="bg-gray-600 flex flex-col w-4/12 rounded-r-2xl">
-                    <div>
+                <div className="bg-gray-600 flex flex-col absolute w-full h-13 overflow-hidden lg:relative bottom-0 lg:w-4/12 rounded-r-2xl">
+                    <div className="flex justify-center items-center bg-gray-300 rounded-tr-2xl">
                         <h2 className="text-center text-3xl font-semibold sticky p-2 rounded-tr-2xl bg-gray-300 text-black">
                             Cart
                         </h2>
+                        <button >^</button>
                     </div>
                     <div className="flex-grow p-4 overflow-y-auto">
                         {cart.length === 0 ? (

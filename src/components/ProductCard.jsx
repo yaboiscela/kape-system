@@ -36,7 +36,7 @@ export default function ProductCard({ addons, name, category, sizes, handleAddTo
     return (
         <div>
         {/* Product Card */}
-        <div className="relative bg-[#f8e7d6] shadow-lg p-2 md:scale-70 lg:scale-100 rounded-2xl w-70 h-min flex flex-col">
+        <div className="relative bg-[#f8e7d6] shadow-lg p-2 md:scale-80 lg:scale-100 rounded-2xl w-70 h-min flex flex-col">
             <div className="h-40 w-full mb-2 rounded-t-xl bg-amber-50">
             <img src="" alt="Product pic" />
             </div>
