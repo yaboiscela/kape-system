@@ -186,17 +186,18 @@ export default function App() {
       {/* Main Content */}
       <div className="bg-[#FAF7F3] z-0 p-6 shadow-md relative h-screen overflow-y-auto w-full">
         <Routes>
-          <Route path="/" element={<Dashboard isMinimized={isMinimized} />} />
 
           {/* Example: Manager-only page */}
           {currentUser.role === "Manager" && (
-            <Route path="/staff" element={<Staff roles={roles} />} />
+            <>
+              <Route path="/" element={<Dashboard isMinimized={isMinimized} />} />
+              <Route path="/staff" element={<Staff roles={roles} />} />
+              <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
+              <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} roles={roles} setRoles={setRoles} />}/>
+            </>
           )}
-
-          <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
           <Route path="/orders" element={<Orders orders={orders} setOrders={setOrders} />} />
           <Route path="/cashier" element={<Cashier categories={categories} products={products} orders={orders} setOrders={setOrders} />} />
-          <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} roles={roles} setRoles={setRoles} />}/>
         </Routes>
       </div>
     </div>

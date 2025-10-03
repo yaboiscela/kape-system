@@ -49,32 +49,31 @@ export default function Navigation({isMinimized, setIsMinimized, currentUser, se
                     <img className={`text-2xl pl-2 w-full pr-6 font-bold whitespace-nowrap transition-opacity ease-in duration-300
                             ${isMinimized ? "opacity-0" : ""}`} src={logo} alt="Kape Timplado's"/>
                     </li>
-
-                    {/* Dashboard */}
-                    <li>
-                    <NavLink to="/" className={activeStyle}>
-                        <IoHomeOutline size={30} className="absolute" />
-                        <span className={spanStyle}>Dashboard</span>
-                    </NavLink>
-                    </li>
-
-                    {/*
-                    Staff
-                    */}
-                    <li>
-                    <NavLink to="/staff" className={activeStyle}>
-                        <IoPeopleOutline size={30} className="absolute" />
-                        <span className={spanStyle}>Staff</span>
-                    </NavLink>
-                    </li>
-
-                    {/* Products */}
-                    <li>
-                    <NavLink to="/products" className={activeStyle}>
-                        <SiBuymeacoffee size={30} className="absolute" />
-                        <span className={spanStyle}>Products</span>
-                    </NavLink>
-                    </li>
+                    {currentUser.role === "Manager" && (
+                        <>
+                        {/* Dashboard */}
+                            <li>
+                                <NavLink to="/" className={activeStyle}>
+                                    <IoHomeOutline size={30} className="absolute" />
+                                    <span className={spanStyle}>Dashboard</span>
+                                </NavLink>
+                            </li>
+                            {/* Staff */}
+                            <li>
+                                <NavLink to="/staff" className={activeStyle}>
+                                    <IoPeopleOutline size={30} className="absolute" />
+                                    <span className={spanStyle}>Staff</span>
+                                </NavLink>
+                            </li>
+                            {/* Products */}
+                            <li>
+                                <NavLink to="/products" className={activeStyle}>
+                                    <SiBuymeacoffee size={30} className="absolute" />
+                                    <span className={spanStyle}>Products</span>
+                                </NavLink>
+                            </li>
+                        </>
+                    )}
 
                     {/* Orders */}
                     <li>
@@ -92,13 +91,17 @@ export default function Navigation({isMinimized, setIsMinimized, currentUser, se
                     </NavLink>
                     </li>
 
-                    {/* Settings */}
-                    <li>
-                    <NavLink to="/settings" className={activeStyle}>
-                        <IoSettingsOutline size={30} className="absolute" />
-                        <span className={spanStyle}>Settings</span>
-                    </NavLink>
-                    </li>
+                    {currentUser.role === "Manager" && (
+                        <> 
+                            {/* Settings */}
+                                <li>
+                                    <NavLink to="/settings" className={activeStyle}>
+                                        <IoSettingsOutline size={30} className="absolute" />
+                                        <span className={spanStyle}>Settings</span>
+                                    </NavLink>
+                                </li>
+                        </>
+                    )}
                 </ul>
                 <div className="p-3 w-full">
                     {/* Logout */}
