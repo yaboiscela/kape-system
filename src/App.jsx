@@ -1,25 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 
-import Dashboard from "./pages/Dashboard";
-import Staff from "./pages/Staff";
-import Products from "./pages/Products";
-import Orders from "./pages/Orders";
-import Cashier from "./pages/Cashier";
-import Settings from "./pages/Settings";
-import Login from "./pages/Login";
+// Lazy load all pages
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Staff = React.lazy(() => import("./pages/Staff"));
+const Products = React.lazy(() => import("./pages/Products"));
+const Orders = React.lazy(() => import("./pages/Orders"));
+const Cashier = React.lazy(() => import("./pages/Cashier"));
+const Settings = React.lazy(() => import("./pages/Settings"));
+const Login = React.lazy(() => import("./pages/Login"));
 
 export default function App() {
 
   const defaultUsers = [
-  { username: "manager", password: "1234", role: "Manager" },
-  { username: "barista", password: "1234", role: "Barista" },
-];
+  
+  ];
 
   const [isMinimized, setIsMinimized] = useState(false);
   
-  const [roles, setRoles] = useState(["Manager", "Barista", "Cashier"]);
+  const [roles, setRoles] = useState([
+      {
+        id: 1,
+        name: "Manager",
+        access: ["Dashboard", "Staff", "Products", "Settings", "Orders", "Cashier"]
+      },
+      {
+        id: 2,
+        name: "Barista",
+        access: ["Orders", "Cashier"]
+      }
+    ]
+  );
 
   const defaultProducts = [
     {
@@ -170,7 +182,15 @@ export default function App() {
   }, [currentUser]);
 
   if (!currentUser) {
-    return <Login users={users} setCurrentUser={setCurrentUser} />;
+    return (
+      <Suspense fallback={
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      }>
+        <Login users={users} setCurrentUser={setCurrentUser} />
+      </Suspense>
+    );
   }
 
   return (
@@ -185,20 +205,24 @@ export default function App() {
 
       {/* Main Content */}
       <div className="bg-[#FAF7F3] z-0 p-6 shadow-md relative h-screen overflow-y-auto w-full">
-        <Routes>
-
-          {/* Example: Manager-only page */}
-          {currentUser.role === "Manager" && (
-            <>
-              <Route path="/" element={<Dashboard isMinimized={isMinimized} />} />
-              <Route path="/staff" element={<Staff roles={roles} />} />
-              <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
-              <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} roles={roles} setRoles={setRoles} />}/>
-            </>
-          )}
-          <Route path="/orders" element={<Orders orders={orders} setOrders={setOrders} />} />
-          <Route path="/cashier" element={<Cashier categories={categories} products={products} orders={orders} setOrders={setOrders} />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        }>
+          <Routes>
+            {currentUser.role === "Manager" && (
+              <>
+                <Route path="/" element={<Dashboard isMinimized={isMinimized} />} />
+                <Route path="/staff" element={<Staff roles={roles} />} />
+                <Route path="/products" element={<Products products={products} setProducts={setProducts} sizes={sizes} categories={categories} addons={addons}/>} />
+                <Route path="/settings" element={<Settings addons={addons} setAddons={setAddons} categories={categories} setCategories={setCategories} sizes={sizes} setSizes={setSizes} roles={roles} setRoles={setRoles} />}/>
+              </>
+            )}
+            <Route path="/orders" element={<Orders orders={orders} setOrders={setOrders} />} />
+            <Route path="/cashier" element={<Cashier categories={categories} products={products} orders={orders} setOrders={setOrders} />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );

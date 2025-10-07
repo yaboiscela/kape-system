@@ -27,7 +27,7 @@ export default function Staff({roles}) {
                     <label className="block text-gray-700 mb-2" htmlFor="role">Role</label>
                     <select className="block border border-gray-300 rounded p-2 w-full text-gray-700" name="" id="">
                         {roles.map((role) => (
-                            <option key={role} value={role}>{role}</option>
+                            <option key={role.id} value={role.name}>{role.name}</option>
                         ))}
                     </select>
                 </div>
