@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     proxy: {
-      '/api': 'https://kape-backend-1r4o.onrender.com',          // ✅ Add this line
+      '/api': 'http://localhost:5000',          // ✅ Add this line
     },
   },
   plugins: [
