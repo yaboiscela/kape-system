@@ -13,5 +13,4 @@ psycopg2-binary==2.9.10
 python-dotenv==1.1.1
 pywin32==311; platform_system == "Windows"
 Werkzeug==2.3.8
-
-
+gunicorn==22.0.0
