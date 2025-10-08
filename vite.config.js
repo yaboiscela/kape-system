@@ -2,11 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vite.dev/config/
 export default defineConfig({
   server: {
     proxy: {
-      '/scrape-products': 'http://localhost:5000',
+      '/api': 'http://localhost:5000',          // ✅ Add this line
     },
   },
   plugins: [

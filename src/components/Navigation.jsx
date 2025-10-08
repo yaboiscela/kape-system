@@ -14,7 +14,12 @@ IoMenuOutline,
 import { SiBuymeacoffee } from "react-icons/si";
 import logo from "../assets/logo.png";
 
-export default function Navigation({isMinimized, setIsMinimized, currentUser, setCurrentUser}) {
+export default function Navigation({isMinimized, setIsMinimized, currentUser, setCurrentUser, roles}) {
+    const getRoleObj = () => roles?.find(r => r.name === currentUser?.role);
+    const hasAccess = (page) => {
+        const roleObj = getRoleObj();
+        return !!roleObj && Array.isArray(roleObj.access) && roleObj.access.includes(page);
+    };
 
     // Dynamic style for NavLink
     const activeStyle = ({ isActive }) =>
@@ -49,58 +54,55 @@ export default function Navigation({isMinimized, setIsMinimized, currentUser, se
                     <img className={`text-2xl pl-2 w-full pr-6 font-bold whitespace-nowrap transition-opacity ease-in duration-300
                             ${isMinimized ? "opacity-0" : ""}`} src={logo} alt="Kape Timplado's"/>
                     </li>
-                    {currentUser.role === "Manager" && (
-                        <>
-                        {/* Dashboard */}
-                            <li>
-                                <NavLink to="/" className={activeStyle}>
-                                    <IoHomeOutline size={30} className="absolute" />
-                                    <span className={spanStyle}>Dashboard</span>
-                                </NavLink>
-                            </li>
-                            {/* Staff */}
-                            <li>
-                                <NavLink to="/staff" className={activeStyle}>
-                                    <IoPeopleOutline size={30} className="absolute" />
-                                    <span className={spanStyle}>Staff</span>
-                                </NavLink>
-                            </li>
-                            {/* Products */}
-                            <li>
-                                <NavLink to="/products" className={activeStyle}>
-                                    <SiBuymeacoffee size={30} className="absolute" />
-                                    <span className={spanStyle}>Products</span>
-                                </NavLink>
-                            </li>
-                        </>
+                    {hasAccess("Dashboard") && (
+                        <li>
+                            <NavLink to="/" className={activeStyle}>
+                                <IoHomeOutline size={30} className="absolute" />
+                                <span className={spanStyle}>Dashboard</span>
+                            </NavLink>
+                        </li>
+                    )}
+                    {hasAccess("Staff") && (
+                        <li>
+                            <NavLink to="/staff" className={activeStyle}>
+                                <IoPeopleOutline size={30} className="absolute" />
+                                <span className={spanStyle}>Staff</span>
+                            </NavLink>
+                        </li>
+                    )}
+                    {hasAccess("Products") && (
+                        <li>
+                            <NavLink to="/products" className={activeStyle}>
+                                <SiBuymeacoffee size={30} className="absolute" />
+                                <span className={spanStyle}>Products</span>
+                            </NavLink>
+                        </li>
                     )}
 
-                    {/* Orders */}
-                    <li>
-                    <NavLink to="/orders" className={activeStyle}>
-                        <IoReaderOutline size={30} className="absolute" />
-                        <span className={spanStyle}>Orders</span>
-                    </NavLink>
-                    </li>
+                    {hasAccess("Orders") && (
+                        <li>
+                            <NavLink to="/orders" className={activeStyle}>
+                                <IoReaderOutline size={30} className="absolute" />
+                                <span className={spanStyle}>Orders</span>
+                            </NavLink>
+                        </li>
+                    )}
+                    {hasAccess("Cashier") && (
+                        <li>
+                            <NavLink to="/cashier" className={activeStyle}>
+                                <IoCashOutline size={30} className="absolute" />
+                                <span className={spanStyle}>Cashier</span>
+                            </NavLink>
+                        </li>
+                    )}
 
-                    {/* Cashier */}
-                    <li>
-                    <NavLink to="/cashier" className={activeStyle}>
-                        <IoCashOutline size={30} className="absolute" />
-                        <span className={spanStyle}>Cashier</span>
-                    </NavLink>
-                    </li>
-
-                    {currentUser.role === "Manager" && (
-                        <> 
-                            {/* Settings */}
-                                <li>
-                                    <NavLink to="/settings" className={activeStyle}>
-                                        <IoSettingsOutline size={30} className="absolute" />
-                                        <span className={spanStyle}>Settings</span>
-                                    </NavLink>
-                                </li>
-                        </>
+                    {hasAccess("Settings") && (
+                        <li>
+                            <NavLink to="/settings" className={activeStyle}>
+                                <IoSettingsOutline size={30} className="absolute" />
+                                <span className={spanStyle}>Settings</span>
+                            </NavLink>
+                        </li>
                     )}
                 </ul>
                 <div className="p-3 w-full">

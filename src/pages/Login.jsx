@@ -1,47 +1,88 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FaUser, FaLock } from "react-icons/fa";
 
-export default function Login({ users, setCurrentUser }) {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+export default function Login({setCurrentUser }) {
+    const [form, setForm] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
 
-    const handleLogin = (e) => {
-        e.preventDefault();
-        const foundUser = users.find(
-        (u) => u.username === username && u.password === password
-        );
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
-        if (foundUser) {
-        setCurrentUser(foundUser);
-        } else {
-        setError("Invalid credentials");
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError("");
+        try {
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: form.username.trim(),
+                    password: form.password.trim(),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error || "Login failed.");
+                return;
+            }
+            setCurrentUser(data.user);
+        } catch (err) {
+            setError("Network error. Please try again.");
         }
     };
 
     return (
-        <div className="flex h-screen justify-center items-center bg-[#FAF7F3]">
-        <form onSubmit={handleLogin} className="p-6 shadow-lg bg-white rounded-md w-96">
-            <h2 className="text-xl font-bold mb-4">Login</h2>
-            
-            <input
-            type="text"
-            placeholder="Username"
-            className="w-full border p-2 mb-2"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            />
-            
-            <input
-            type="password"
-            placeholder="Password"
-            className="w-full border p-2 mb-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            />
-            
-            {error && <p className="text-red-500 mb-2">{error}</p>}
+        <div className="flex items-center justify-center h-screen bg-[#FAF7F3]">
+        <form
+            onSubmit={handleLogin}
+            className="bg-white rounded-2xl shadow-md p-10 w-full max-w-sm"
+        >
+            <h1 className="text-2xl font-semibold text-center mb-6 text-gray-800">
+            Café System Login
+            </h1>
 
-            <button type="submit" className="w-full bg-black text-white p-2 rounded-md">
+            {error && (
+            <div className="bg-red-100 text-red-600 text-sm p-2 rounded mb-3">
+                {error}
+            </div>
+            )}
+
+            <div className="mb-4">
+            <label className="block text-gray-600 mb-1 text-sm">Username</label>
+            <div className="flex items-center border rounded-lg px-3">
+                <FaUser className="text-gray-500 mr-2" />
+                <input
+                type="text"
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                className="w-full p-2 outline-none text-gray-700"
+                placeholder="Enter username"
+                autoFocus
+                />
+            </div>
+            </div>
+
+            <div className="mb-6">
+            <label className="block text-gray-600 mb-1 text-sm">Password</label>
+            <div className="flex items-center border rounded-lg px-3">
+                <FaLock className="text-gray-500 mr-2" />
+                <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full p-2 outline-none text-gray-700"
+                placeholder="Enter password"
+                />
+            </div>
+            </div>
+
+            <button
+            type="submit"
+            className="w-full bg-[#503CEB] text-white py-2 rounded-lg hover:bg-[#3b2fd1] transition-all"
+            >
             Login
             </button>
         </form>
