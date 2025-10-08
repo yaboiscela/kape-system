@@ -5,6 +5,7 @@ export default function Staff({ roles }) {
     
     const [staff, setStaff] = useState([]);
 
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
     // Form state
     const [form, setForm] = useState({
@@ -35,7 +36,7 @@ export default function Staff({ roles }) {
         };
 
         try {
-            const res = await fetch("/api/register", {
+            const res = await fetch(`${API_URL}/api/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newStaff),
@@ -59,7 +60,7 @@ export default function Staff({ roles }) {
         let mounted = true;
         const fetchUsers = async () => {
             try {
-                const res = await fetch('/api/users');
+                const res = await fetch(`${API_URL}/api/users`);
                 if (!res.ok) return;
                 const data = await res.json();
                 if (mounted) setStaff(data);
@@ -74,7 +75,7 @@ export default function Staff({ roles }) {
     // Toggle active state on backend and update UI
     const toggleActive = async (id, currentActive) => {
         try {
-            const res = await fetch(`/api/users/${id}/active`, {
+            const res = await fetch(`${API_URL}/api/users/${id}/active`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ active: !currentActive })
@@ -92,7 +93,7 @@ export default function Staff({ roles }) {
 
     const resetPassword = async (id) => {
         try {
-            const res = await fetch(`/api/users/${id}/reset-password`, { method: 'PATCH' });
+            const res = await fetch(`${API_URL}/api/users/${id}/reset-password`, { method: 'PATCH' });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to reset');
             // update staff entry with returned password and show it
