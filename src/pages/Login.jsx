@@ -5,6 +5,8 @@ export default function Login({setCurrentUser }) {
     const [form, setForm] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
 
+    const API_URL = import.meta.env.VITE_API_URL || "";
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -13,7 +15,7 @@ export default function Login({setCurrentUser }) {
         e.preventDefault();
         setError("");
         try {
-            const res = await fetch("/api/login", {
+            const res = await fetch("${API_URL}/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
