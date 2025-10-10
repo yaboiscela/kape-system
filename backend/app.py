@@ -7,17 +7,17 @@ import bcrypt
 from db import get_connection
 import os
 from dotenv import load_dotenv
-import secrets
-import string
 from datetime import timedelta
+from psycopg2.errors import UniqueViolation
+import random, string
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, expose_headers=["Authorization"])
 
 # ---------------- JWT CONFIG ----------------
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "supersecretkey")
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=6)
 jwt = JWTManager(app)
 
@@ -38,13 +38,19 @@ def register():
         password = data.get("password")
         active = data.get("active", True)
 
-        if not username or not password:
+        if not username or not password or not name or not role:
             return jsonify({"error": "Missing required fields"}), 400
 
         hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
         conn = get_connection()
         cur = conn.cursor()
+
+        # Prevent duplicate usernames
+        cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+        if cur.fetchone():
+            return jsonify({"error": "Username already exists"}), 409
+
         cur.execute("""
             INSERT INTO users (username, name, role, password, active)
             VALUES (%s, %s, %s, %s, %s)
@@ -61,6 +67,8 @@ def register():
             "username": username
         }), 201
 
+    except UniqueViolation:
+        return jsonify({"error": "Username already exists"}), 409
     except Exception as e:
         print("Error in /api/register:", e)
         return jsonify({"error": str(e)}), 500
@@ -93,7 +101,8 @@ def login():
             return jsonify({"error": "Account inactive"}), 403
 
         if bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8")):
-            access_token = create_access_token(identity={"id": user_id, "username": username, "role": role})
+            # ✅ Only store user_id as string
+            access_token = create_access_token(identity=str(user_id))
             return jsonify({
                 "message": "Login successful",
                 "token": access_token,
@@ -111,8 +120,135 @@ def login():
 @app.route("/api/me", methods=["GET"])
 @jwt_required()
 def get_current_user():
-    user = get_jwt_identity()
-    return jsonify({"user": user}), 200
+    try:
+        user_id = get_jwt_identity()
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, username, role, active FROM users WHERE id = %s", (int(user_id),))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify({
+            "user": {
+                "id": user[0],
+                "username": user[1],
+                "role": user[2],
+                "active": user[3]
+            }
+        }), 200
+
+    except Exception as e:
+        print("Error in /api/me:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------- GET ALL USERS ----------------
+@app.route("/api/users", methods=["GET"])
+@jwt_required()
+def get_all_users():
+    try:
+        user_id = get_jwt_identity()
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT role FROM users WHERE id = %s", (int(user_id),))
+        role = cur.fetchone()
+        if not role:
+            return jsonify({"error": "User not found"}), 404
+        if role[0].lower() not in ["admin", "manager"]:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        cur.execute("SELECT id, username, name, role, active FROM users ORDER BY id ASC")
+        users = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        return jsonify([
+            {"id": u[0], "username": u[1], "name": u[2], "role": u[3], "active": u[4]}
+            for u in users
+        ]), 200
+
+    except Exception as e:
+        print("Error in /api/users:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------- TOGGLE ACTIVE STATE ----------------
+@app.route("/api/users/<int:user_id>/active", methods=["PATCH"])
+@jwt_required()
+def toggle_active(user_id):
+    try:
+        requester_id = get_jwt_identity()
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT role FROM users WHERE id = %s", (int(requester_id),))
+        role = cur.fetchone()
+        if not role:
+            return jsonify({"error": "User not found"}), 404
+        if role[0].lower() not in ["admin", "manager"]:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        data = request.get_json(force=True)
+        new_active = data.get("active")
+        if new_active is None:
+            return jsonify({"error": "Missing 'active' field"}), 400
+
+        cur.execute("UPDATE users SET active = %s WHERE id = %s RETURNING id, active", (new_active, user_id))
+        updated = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        if not updated:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify({"id": updated[0], "active": updated[1]}), 200
+
+    except Exception as e:
+        print("Error in /api/users/<id>/active:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------- RESET PASSWORD ----------------
+@app.route("/api/users/<int:user_id>/reset-password", methods=["PATCH"])
+@jwt_required()
+def reset_password(user_id):
+    try:
+        requester_id = get_jwt_identity()
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT role FROM users WHERE id = %s", (int(requester_id),))
+        role = cur.fetchone()
+        if not role:
+            return jsonify({"error": "User not found"}), 404
+        if role[0].lower() not in ["admin", "manager"]:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        hashed_password = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        cur.execute("UPDATE users SET password = %s WHERE id = %s RETURNING username", (hashed_password, user_id))
+        result = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        if not result:
+            return jsonify({"error": "User not found"}), 404
+
+        username = result[0]
+        return jsonify({"message": "Password reset successfully", "username": username, "password": new_password}), 200
+
+    except Exception as e:
+        print("Error in /api/users/<id>/reset-password:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

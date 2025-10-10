@@ -30,12 +30,16 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    // Try restoring from localStorage
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
   const [loading, setLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL || "";
 
-  // ✅ Verify JWT on mount
+  // ✅ Verify JWT on mount or refresh
   useEffect(() => {
     const verifyToken = async () => {
       const token = localStorage.getItem("token");
@@ -58,6 +62,7 @@ export default function App() {
         } else {
           const data = await res.json();
           setCurrentUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user));
         }
       } catch (err) {
         console.error("Token verification failed:", err);
@@ -70,7 +75,7 @@ export default function App() {
     };
 
     verifyToken();
-  }, []);
+  }, [API_URL]);
 
   // 🌀 Show loading spinner while checking token
   if (loading) {
@@ -81,7 +86,7 @@ export default function App() {
     );
   }
 
-  // 🚪 No logged-in user → show Login page
+  // 🚪 If not logged in, show Login page
   if (!currentUser) {
     return (
       <Suspense
@@ -103,7 +108,7 @@ export default function App() {
 
   return (
     <div className="flex font-sans text-black">
-      {/* Sidebar */}
+      {/* Sidebar Navigation */}
       <Navigation
         isMinimized={isMinimized}
         setIsMinimized={setIsMinimized}
