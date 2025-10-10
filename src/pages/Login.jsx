@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 
-export default function Login({setCurrentUser }) {
+export default function Login({ setCurrentUser }) {
     const [form, setForm] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
-
     const API_URL = import.meta.env.VITE_API_URL || "";
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -14,23 +15,40 @@ export default function Login({setCurrentUser }) {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
+
         try {
-            const res = await fetch(`${API_URL}/api/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username: form.username.trim(),
-                    password: form.password.trim(),
-                }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                setError(data.error || "Login failed.");
-                return;
-            }
-            setCurrentUser(data.user);
+        const res = await fetch(`${API_URL}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            setError(data.error || "Login failed");
+            return;
+        }
+
+        // ✅ Save JWT token and user
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        setCurrentUser(data.user);
+
+        // ✅ Redirect to role's first page
+        const roleAccess = {
+            Manager: ["Dashboard", "Staff", "Products", "Settings", "Orders", "Cashier"],
+            Barista: ["Orders", "Cashier"],
+        };
+        const firstPage = roleAccess[data.user.role]?.[0] || "Dashboard";
+
+        // convert to lowercase path (Dashboard → /, Staff → /staff)
+        const pagePath =
+            firstPage === "Dashboard" ? "/" : `/${firstPage.toLowerCase()}`;
+
+        navigate(pagePath, { replace: true });
         } catch (err) {
-            setError("Network error. Please try again.");
+        setError("Network error. Please try again.");
         }
     };
 
@@ -41,7 +59,7 @@ export default function Login({setCurrentUser }) {
             className="bg-white rounded-2xl shadow-md p-10 w-full max-w-sm"
         >
             <h1 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-            Café System Login
+            Login
             </h1>
 
             {error && (

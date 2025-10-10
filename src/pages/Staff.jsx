@@ -7,7 +7,6 @@ export default function Staff({ roles }) {
 
     const API_URL = import.meta.env.VITE_API_URL || "";
 
-    // Form state
     const [form, setForm] = useState({
         username: "",
         name: "",
@@ -15,7 +14,6 @@ export default function Staff({ roles }) {
         active: true,
     });
 
-    // Helper to generate random password
     const generatePassword = (length = 8) => {
         const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join("");

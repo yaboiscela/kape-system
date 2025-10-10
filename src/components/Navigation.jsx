@@ -21,6 +21,19 @@ export default function Navigation({isMinimized, setIsMinimized, currentUser, se
         return !!roleObj && Array.isArray(roleObj.access) && roleObj.access.includes(page);
     };
 
+    const handleLogout = () => {
+        // Clear stored session data
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        // Reset current user in parent
+        setCurrentUser(null);
+
+        // Force reload so the App re-renders to Login
+        window.location.reload();
+    };
+
+
     // Dynamic style for NavLink
     const activeStyle = ({ isActive }) =>
         `flex items-center py-2 text-xl font-semibold transition-all duration-300 ${
@@ -108,9 +121,9 @@ export default function Navigation({isMinimized, setIsMinimized, currentUser, se
                 <div className="p-3 w-full">
                     {/* Logout */}
                     <button
-                        onClick={() => setCurrentUser(null)}
+                        onClick={handleLogout}
                         className={`flex w-full items-center pl-2.5 py-5.5 rounded-full text-xl font-semibold text-red-600 hover:bg-red-400 hover:text-white transition-all duration-300 `}
-                    >
+                        >
                         <IoLogOutOutline size={30} className="absolute" />
                         <span className={`${spanStyle} fixed`}>Sign Out</span>
                     </button>
