@@ -25,6 +25,41 @@ export default function App() {
     },
   ]);
 
+  useEffect(() => {
+        const fetchAllData = async () => {
+            try {
+            const [catRes, addonRes, sizeRes, roleRes] = await Promise.all([
+                fetch("/api/categories"),
+                fetch("/api/addons"),
+                fetch("/api/sizes"),
+                fetch("/api/roles"),
+            ]);
+
+            if (!catRes.ok || !addonRes.ok || !sizeRes.ok || !roleRes.ok) {
+                throw new Error("Failed to fetch one or more tables");
+            }
+
+            const [cats, addons, sizes, roles] = await Promise.all([
+                catRes.json(),
+                addonRes.json(),
+                sizeRes.json(),
+                roleRes.json(),
+            ]);
+
+            setCategories(cats || []);
+            console.log("Fetched categories: %o", cats);
+            setAddons(addons || []);
+            setSizes(sizes || []);
+            setRoles(roles || []);
+            } catch (err) {
+            console.error("Fetch tables failed:", err);
+            alert("Failed to load data. Check console for details.");
+            }
+        };
+
+        fetchAllData();
+    }, []);
+
   const [products, setProducts] = useState([]);
   const [addons, setAddons] = useState([]);
   const [categories, setCategories] = useState([]);

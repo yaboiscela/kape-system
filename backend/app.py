@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from psycopg2.errors import UniqueViolation
 import random, string
+from werkzeug.utils import secure_filename
+import json
 
 load_dotenv()
 
@@ -249,6 +251,266 @@ def reset_password(user_id):
     except Exception as e:
         print("Error in /api/users/<id>/reset-password:", e)
         return jsonify({"error": str(e)}), 500
+
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# ---------------- ADD PRODUCT ----------------
+@app.route("/api/products", methods=["POST"])
+@jwt_required()
+def add_product():
+    try:
+        name = request.form.get("productName")
+        category = request.form.get("category")
+        size = request.form.get("size") or "{}"
+        addons = request.form.get("addons") or "[]"
+
+        # Handle uploaded file
+        image_file = request.files.get("productImage")
+        filename = None
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            image_file.save(image_path)
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            INSERT INTO products (name, category, image, size, addons)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (name, category, filename, json.loads(size), json.loads(addons)))
+
+        product_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return jsonify({"message": "Product added successfully", "id": product_id}), 201
+
+    except Exception as e:
+        print("Error in /api/products:", e)
+        return jsonify({"error": str(e)}), 500
+
+# ---------------- GET PRODUCTS ----------------
+@app.route("/api/products", methods=["GET"])
+@jwt_required()
+def get_products():
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, name, category, image, size, addons FROM products ORDER BY id ASC")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        products = [
+            {
+                "id": r[0],
+                "name": r[1],
+                "category": r[2],
+                "image": r[3],
+                "size": r[4],
+                "addons": r[5],
+            }
+            for r in rows
+        ]
+
+        return jsonify(products), 200
+
+    except Exception as e:
+        print("Error in /api/products (GET):", e)
+        return jsonify({"error": str(e)}), 500
+    
+# In-memory data simulation
+categories = ["coffee", "tea"]
+addons = []
+sizes = []
+roles = []
+
+# ---------------- CATEGORY ROUTES ----------------
+
+@app.route("/api/categories", methods=["GET"])
+def get_categories():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM categories")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    # psycopg2 returns tuples, so we manually map to dict
+    columns = ["id", "name"]
+    data = [dict(zip(columns, row)) for row in rows]
+    return jsonify(data)
+
+@app.route("/api/categories", methods=["POST"])
+def add_category():
+    data = request.get_json()
+    name = data.get("name")
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO categories (name) VALUES (%s)", (name,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"name": name})
+
+@app.route("/api/categories/<string:name>", methods=["PUT"])
+def update_category(name):
+    try:
+        data = request.get_json()
+        new_name = data.get("newName")
+
+        if not new_name:
+            return jsonify({"error": "New category name required"}), 400
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE categories SET name = %s WHERE name = %s RETURNING name",
+            (new_name, name)
+        )
+        updated = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        if not updated:
+            return jsonify({"error": "Category not found"}), 404
+
+        return jsonify({"message": "Category updated", "category": updated[0]}), 200
+
+    except Exception as e:
+        print("Error updating category:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/api/categories/<int:id>", methods=["DELETE"])
+def delete_category(id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM categories WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Category deleted"})
+
+
+# ---------------- ADDONS ROUTES ----------------
+
+@app.route("/api/addons", methods=["GET"])
+def get_addons():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM addons")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    columns = ["id", "name", "price"]
+    data = [dict(zip(columns, row)) for row in rows]
+    return jsonify(data)
+
+@app.route("/api/addons", methods=["POST"])
+def add_addon():
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price", 0)
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO addons (name, price) VALUES (%s, %s)", (name, price))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Addon added"})
+
+@app.route("/api/addons/<int:id>", methods=["DELETE"])
+def delete_addon(id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM addons WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Addon deleted"})
+
+
+# ---------------- SIZES ROUTES ----------------
+
+@app.route("/api/sizes", methods=["GET"])
+def get_sizes():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM sizes")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    columns = ["id", "name", "price"]
+    data = [dict(zip(columns, row)) for row in rows]
+    return jsonify(data)
+
+@app.route("/api/sizes", methods=["POST"])
+def add_size():
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price", 0)
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO sizes (name, price) VALUES (%s, %s)", (name, price))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Size added"})
+
+@app.route("/api/sizes/<int:id>", methods=["DELETE"])
+def delete_size(id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM sizes WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Size deleted"})
+
+
+# ---------------- ROLES ROUTES ----------------
+
+@app.route("/api/roles", methods=["GET"])
+def get_roles():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM roles")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    columns = ["id", "name", "access"]
+    data = [dict(zip(columns, row)) for row in rows]
+    return jsonify(data)
+
+@app.route("/api/roles", methods=["POST"])
+def add_role():
+    data = request.get_json()
+    name = data.get("name")
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO roles (name) VALUES (%s)", (name,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Role added"})
+
+@app.route("/api/roles/<int:id>", methods=["DELETE"])
+def delete_role(id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM roles WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"message": "Role deleted"})
 
 
 if __name__ == "__main__":

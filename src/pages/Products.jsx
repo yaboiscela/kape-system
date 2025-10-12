@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 
 export default function Products({ products, setProducts, categories, sizes, addons }) {
     // ----------------- States -----------------
@@ -7,35 +8,97 @@ export default function Products({ products, setProducts, categories, sizes, add
 
     const [search, setSearch] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
-
+    
     const [selectedProduct, setSelectedProduct] = useState(null);
     const contextMenuRef = useRef(null);
-
+    
     const [tempAddons, setTempAddons] = useState([]);
-
+    
     // Regular vs Sizes
     const [isRegularSelected, setIsRegularSelected] = useState(false);
     const [selectedSizes, setSelectedSizes] = useState([]);
-
+    
     // Selected category for new product
     const [selectedCategory, setSelectedCategory] = useState("");
 
-    // ----------------- Load Data -----------------
+    // ----------------- Add Product -----------------
+    const handleAddProduct = async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+
+        // Construct product data
+        const newProduct = {
+            id: products.length + 1,
+            name: formData.get("productName"),
+            category: selectedCategory,
+            image: "",
+            size: {},
+            addons: tempAddons,
+        };
+
+        if (isRegularSelected) {
+            const regularPrice = formData.get("regularPrice");
+            if (regularPrice) newProduct.size["regular"] = parseFloat(regularPrice);
+        } else {
+            sizes.forEach((size) => {
+            if (formData.getAll("sizes[]").includes(size.name)) {
+                const customPrice = formData.get(`price_${size.name}`);
+                newProduct.size[size.name.toLowerCase()] =
+                customPrice ? parseFloat(customPrice) : size.price;
+            }
+            });
+        }
+
+        setProducts((prev) => [...prev, newProduct]);
+
+        // ---------------- Save to Flask backend ----------------
+        try {
+            const token = localStorage.getItem("token");
+            formData.append("addons", JSON.stringify(tempAddons));
+            formData.append("size", JSON.stringify(newProduct.size));
+            formData.append("category", selectedCategory);
+
+            await axios.post(`${API_URL}/api/products`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+            });
+
+            console.log("✅ Product added successfully");
+        } catch (err) {
+            console.error("❌ Error adding product:", err.response?.data || err.message);
+            alert("Error adding product");
+        }
+
+        // Reset form
+        setIsRegularSelected(false);
+        setSelectedSizes([]);
+        setSelectedCategory("");
+        setTempAddons([]);
+        e.target.reset();
+        };
+
+        // ----------------- Load Data -----------------
     const loadProducts = async () => {
         try {
-        setLoading(true);
-        const res = await fetch("/db/products_get.php");
-        if (!res.ok) throw new Error("Failed to fetch products");
+            setLoading(true);
+            const token = localStorage.getItem("token");
 
-        const data = await res.json();
-        setProducts(data.length > 0 ? data : defaultProducts);
-        setError(null);
+            const res = await axios.get(`${API_URL}/api/products`, {
+            headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const data = res.data;
+            setProducts(data.length > 0 ? data : defaultProducts);
+            setError(null);
         } catch (err) {
-        console.warn("Using default fallback products:", err.message);
-        setError("Unable to load products from database.");
-        setProducts(defaultProducts); // ✅ Fallback to sample data
+            console.warn("Using default fallback products:", err.message);
+            setError("Unable to load products from database.");
+            setProducts(defaultProducts); // ✅ fallback to sample data
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -76,57 +139,6 @@ export default function Products({ products, setProducts, categories, sizes, add
         }
     };
 
-    // ----------------- Add Product -----------------
-    const handleAddProduct = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-
-        const newProduct = {
-        id: products.length + 1,
-        name: formData.get("productName"),
-        category: selectedCategory,
-        image: "",
-        size: {},
-        addons: tempAddons,
-        };
-
-        if (isRegularSelected) {
-        const regularPrice = formData.get("regularPrice");
-        if (regularPrice) newProduct.size["regular"] = parseFloat(regularPrice);
-        } else {
-        sizes.forEach((size) => {
-            if (formData.getAll("sizes[]").includes(size.name)) {
-            const customPrice = formData.get(`price_${size.name}`);
-            newProduct.size[size.name.toLowerCase()] =
-                customPrice ? parseFloat(customPrice) : size.price;
-            }
-        });
-        }
-
-        setProducts((prev) => [...prev, newProduct]);
-
-        // Optional backend save
-        try {
-        formData.append("addons", JSON.stringify(tempAddons));
-        const res = await fetch("/db/products_add.php", {
-            method: "POST",
-            body: formData,
-        });
-        const result = await res.text();
-        if (result !== "success") {
-            alert("Error: " + result);
-        }
-        } catch (err) {
-        console.error("Error adding product:", err);
-        }
-
-        // Reset form
-        setIsRegularSelected(false);
-        setSelectedSizes([]);
-        setSelectedCategory("");
-        setTempAddons([]);
-        e.target.reset();
-    };
 
     // ----------------- Context Menu -----------------
     const handleContextMenu = (e, product) => {
@@ -220,11 +232,11 @@ export default function Products({ products, setProducts, categories, sizes, add
                 {/* Status Messages */}
                 {loading && <p className="italic text-gray-500">Loading products...</p>}
                 {error && <p className="text-red-500">{error}</p>}
-            <div className="flex w-full">
+            <div className="flex flex-col lg:flex-row gap-6 w-full">
                 {/* Add Product Form */}
                 <form
                     onSubmit={handleAddProduct}
-                    className="w-1/2 p-4 border rounded shadow-md "
+                    className="lg:w-1/2 p-4 border rounded shadow-md "
                 >
 
                         <div className="flex gap-4">
@@ -379,7 +391,7 @@ export default function Products({ products, setProducts, categories, sizes, add
                     Add Product
                     </button>
                 </form>
-                <div className="w-1/2 pl-6">
+                <div className="lg:w-1/2">
                     {/* Filters */}
                     <div className="flex gap-4 mb-4">
                         <select

@@ -73,7 +73,7 @@ function Modal({ open, onClose, children, title }) {
         const name = (categoryName || "").trim();
         if (!name) return alert("Category name cannot be empty.");
 
-        if (categories.some((c) => c.toLowerCase() === name.toLowerCase()))
+        if (categories.some((c) => c.name.toLowerCase() === name.toLowerCase()))
         return alert("Category already exists!");
 
         // POST to backend
@@ -86,8 +86,11 @@ function Modal({ open, onClose, children, title }) {
         if (!res.ok) await handleFetchError(res);
         const created = await res.json(); // expect { id, name } or name
         // update local state (backend authoritative)
-        if (created?.name) setCategories((p) => [...p, created.name]);
-        else setCategories((p) => [...p, name.toLowerCase()]);
+        if (created?.name) setCategories((p) => [...p, {
+            id: p.length+1,
+            name:created.name}]);
+            else setCategories((p) => [...p, name.toLowerCase()]);
+            console.log(categories)
         setCategoryName("");
         } catch (err) {
         console.error("Add category:", err);
@@ -103,16 +106,16 @@ function Modal({ open, onClose, children, title }) {
         const { old, value } = editModal.data;
         const newName = (value || "").trim();
         if (!newName) return alert("Category name cannot be empty.");
-        if (categories.some((c) => c.toLowerCase() === newName.toLowerCase() && c !== old))
+        if (categories.some((c) => c.name.toLowerCase() === newName.toLowerCase() && c !== old))
         return alert("Category already exists.");
 
         try {
         // our backend could accept either id-based or old-name-based update.
         // We'll send { oldName, newName }
-        const res = await fetch(`/api/categories`, {
+        const res = await fetch(`/api/categories/${old}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ oldName: old, newName: newName.toLowerCase() }),
+            body: JSON.stringify({ newName: newName.toLowerCase() }),
         });
         if (!res.ok) await handleFetchError(res);
         // on success, update local state and also update referencing addons & sizes
@@ -133,16 +136,16 @@ function Modal({ open, onClose, children, title }) {
         if (usedInAddons || usedInSizes) {
         return alert("Cannot delete: category is used by Addons or Sizes.");
         }
-        if (!confirm(`Delete category "${cat}"?`)) return;
+        if (!confirm(`Delete category "${capitalize(cat.name)}"?`)) return;
         deleteCategory(cat);
     };
 
     const deleteCategory = async (cat) => {
         try {
-        const res = await fetch(`/api/categories`, {
+        const res = await fetch(`/api/categories/${cat.id}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: cat }),
+            body: JSON.stringify({ id: cat }),
         });
         if (!res.ok) await handleFetchError(res);
         setCategories((prev) => prev.filter((c) => c !== cat));
@@ -359,7 +362,9 @@ function Modal({ open, onClose, children, title }) {
     };
 
     // ----------------- Helpers -----------------
-    const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
+    const capitalize = (s) =>
+        typeof s === "string" ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
 
     // ----------------- Render -----------------
     return (
@@ -404,10 +409,10 @@ function Modal({ open, onClose, children, title }) {
 
             <ul className="space-y-2 py-2">
                 {categories.map((item) => (
-                <li key={item} className="flex justify-between items-center text-center p-2 rounded-lg bg-[#f8e7d6] shadow-md text-[#7f5539] text-lg">
-                    <h1 className="w-full">{capitalize(item)}</h1>
+                <li key={item.id} className="flex justify-between items-center text-center p-2 rounded-lg bg-[#f8e7d6] shadow-md text-[#7f5539] text-lg">
+                    <h1 className="w-full">{capitalize(item.name)}</h1>
                     <div className="w-full items-center gap-2 flex flex-col">
-                    <button onClick={() => openEditCategory(item)} className="cursor-pointer p-1 border rounded transition-colors bg-blue-100 text-blue-500 hover:text-white hover:bg-blue-500 w-20">edit</button>
+                    <button onClick={() => openEditCategory(item.name)} className="cursor-pointer p-1 border rounded transition-colors bg-blue-100 text-blue-500 hover:text-white hover:bg-blue-500 w-20">edit</button>
                     <button onClick={() => confirmDeleteCategory(item)} className="cursor-pointer p-1 border rounded transition-colors bg-red-100 text-red-500 hover:text-white hover:bg-red-500 w-20">delete</button>
                     </div>
                 </li>
@@ -437,8 +442,8 @@ function Modal({ open, onClose, children, title }) {
 
                 <select value={addonCategory} onChange={(e) => setAddonCategory(e.target.value)} className="border border-[#7f5539] text-[#7f5539] bg-white rounded p-2 w-1/6">
                 {categories.map((category) => (
-                    <option key={category} value={category}>
-                    {capitalize(category)}
+                    <option key={category.id} value={category.name}>
+                    {capitalize(category.name)}
                     </option>
                 ))}
                 </select>
@@ -468,10 +473,11 @@ function Modal({ open, onClose, children, title }) {
             <ul className="space-y-2 py-2">
                 {addons.map((item) => (
                     <AddonsItems
+                        key={item.id}
                         id={item.id}
                         name={capitalize(item.name)}
                         category={capitalize(item.category)}
-                        price={item.price}
+                        price={Number(item.price)}
                         onEdit={() => openEditAddon(item)}
                         onDelete={() => confirmDeleteAddon(item.id)}
                     />
@@ -501,8 +507,8 @@ function Modal({ open, onClose, children, title }) {
 
                 <select value={sizeCategory} onChange={(e) => setSizeCategory(e.target.value)} className="border border-[#7f5539] text-[#7f5539] bg-white rounded p-2 w-50">
                 {categories.map((category) => (
-                    <option key={category} value={category}>
-                    {capitalize(category)}
+                    <option key={category.id} value={category.name}>
+                    {capitalize(category.name)}
                     </option>
                 ))}
                 </select>
