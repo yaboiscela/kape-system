@@ -54,6 +54,8 @@ function Modal({ open, onClose, children, title }) {
 
     const pages = ["Orders", "Cashier", "Products", "Staff", "Settings", "Dashboard"];
 
+    const API_URL = import.meta.env.VITE_API_URL || "";
+
     // sync categories default when categories prop changes
     useEffect(() => {
         if (!categories.includes(addonCategory)) setAddonCategory(categories[0] || "");
@@ -78,7 +80,7 @@ function Modal({ open, onClose, children, title }) {
 
         // POST to backend
         try {
-        const res = await fetch("/api/categories", {
+        const res = await fetch(`${API_URL}/api/categories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name.toLowerCase() }),
@@ -112,7 +114,7 @@ function Modal({ open, onClose, children, title }) {
         try {
         // our backend could accept either id-based or old-name-based update.
         // We'll send { oldName, newName }
-        const res = await fetch(`/api/categories/${old}`, {
+        const res = await fetch(`${API_URL}/api/categories/${old}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ newName: newName.toLowerCase() }),
@@ -142,7 +144,7 @@ function Modal({ open, onClose, children, title }) {
 
     const deleteCategory = async (cat) => {
         try {
-        const res = await fetch(`/api/categories/${cat.id}`, {
+        const res = await fetch(`${API_URL}/api/categories/${cat.id}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: cat }),
@@ -170,7 +172,7 @@ function Modal({ open, onClose, children, title }) {
         return alert("Addon already exists");
 
         try {
-        const res = await fetch("/api/addons", {
+        const res = await fetch(`${API_URL}/api/addons`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name.toLowerCase(), price, category }),
@@ -196,7 +198,7 @@ function Modal({ open, onClose, children, title }) {
         if (!a.name || a.name.trim() === "") return alert("Name required");
         if (isNaN(parseFloat(a.price)) || parseFloat(a.price) < 0) return alert("Valid price required");
         try {
-        const res = await fetch(`/api/addons/${a.id}`, {
+        const res = await fetch(`${API_URL}/api/addons/${a.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: a.name.toLowerCase(), price: parseFloat(a.price), category: a.category }),
@@ -218,7 +220,7 @@ function Modal({ open, onClose, children, title }) {
 
     const deleteAddon = async (id) => {
         try {
-        const res = await fetch(`/api/addons/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_URL}/api/addons/${id}`, { method: "DELETE" });
         if (!res.ok) await handleFetchError(res);
         setAddons((prev) => prev.filter((a) => a.id !== id));
         } catch (err) {
@@ -241,7 +243,7 @@ function Modal({ open, onClose, children, title }) {
         return alert("Size already exists");
 
         try {
-        const res = await fetch("/api/sizes", {
+        const res = await fetch(`${API_URL}/api/sizes`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name.toLowerCase(), price, category }),
@@ -267,7 +269,7 @@ function Modal({ open, onClose, children, title }) {
         if (!s.name || s.name.trim() === "") return alert("Name required");
         if (isNaN(parseFloat(s.price)) || parseFloat(s.price) < 0) return alert("Valid price required");
         try {
-        const res = await fetch(`/api/sizes/${s.id}`, {
+        const res = await fetch(`${API_URL}/api/sizes/${s.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: s.name.toLowerCase(), price: parseFloat(s.price), category: s.category }),
@@ -289,7 +291,7 @@ function Modal({ open, onClose, children, title }) {
 
     const deleteSize = async (id) => {
         try {
-        const res = await fetch(`/api/sizes/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_URL}/api/sizes/${id}`, { method: "DELETE" });
         if (!res.ok) await handleFetchError(res);
         setSizes((prev) => prev.filter((s) => s.id !== id));
         } catch (err) {
@@ -305,7 +307,7 @@ function Modal({ open, onClose, children, title }) {
         if (roles.some((r) => r.name.toLowerCase() === name.toLowerCase()))
         return alert("Role already exists");
         try {
-        const res = await fetch("/api/roles", {
+        const res = await fetch(`${API_URL}/api/roles`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name.toLowerCase(), access: accessPages }),
@@ -330,7 +332,7 @@ function Modal({ open, onClose, children, title }) {
         const r = editModal.data;
         if (!r.name || r.name.trim() === "") return alert("Role name required");
         try {
-        const res = await fetch(`/api/roles/${r.id}`, {
+        const res = await fetch(`${API_URL}/api/roles/${r.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: r.name.toLowerCase(), access: r.access }),
@@ -352,7 +354,7 @@ function Modal({ open, onClose, children, title }) {
 
     const deleteRole = async (id) => {
         try {
-        const res = await fetch(`/api/roles/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_URL}/api/roles/${id}`, { method: "DELETE" });
         if (!res.ok) await handleFetchError(res);
         setRoles((prev) => prev.filter((r) => r.id !== id));
         } catch (err) {

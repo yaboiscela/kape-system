@@ -25,14 +25,16 @@ export default function App() {
     },
   ]);
 
+  const API_URL = import.meta.env.VITE_API_URL || "";
+
   useEffect(() => {
         const fetchAllData = async () => {
             try {
             const [catRes, addonRes, sizeRes, roleRes] = await Promise.all([
-                fetch("/api/categories"),
-                fetch("/api/addons"),
-                fetch("/api/sizes"),
-                fetch("/api/roles"),
+                fetch(`${API_URL}/api/categories`),
+                fetch(`${API_URL}/api/addons`),
+                fetch(`${API_URL}/api/sizes`),
+                fetch(`${API_URL}/api/roles`),
             ]);
 
             if (!catRes.ok || !addonRes.ok || !sizeRes.ok || !roleRes.ok) {
@@ -72,7 +74,6 @@ export default function App() {
   });
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   // ✅ Verify JWT on mount or refresh
   useEffect(() => {
