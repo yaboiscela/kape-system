@@ -352,11 +352,14 @@ def add_category():
     name = data.get("name")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO categories (name) VALUES (%s)", (name,))
+    cur.execute("INSERT INTO categories (name) VALUES (%s)", (name))
+
+    new_id = cur.fetchone()[0]
+
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"name": name})
+    return jsonify({"id": new_id,"name": name})
 
 @app.route("/api/categories/<string:name>", methods=["PUT"])
 def update_category(name):
@@ -370,7 +373,7 @@ def update_category(name):
         conn = get_connection()
         cur = conn.cursor()
         cur.execute(
-            "UPDATE categories SET name = %s WHERE name = %s RETURNING name",
+            "UPDATE categories SET name = %s WHERE name = %s RETURNING name, id",
             (new_name, name)
         )
         updated = cur.fetchone()
@@ -386,7 +389,6 @@ def update_category(name):
     except Exception as e:
         print("Error updating category:", e)
         return jsonify({"error": str(e)}), 500
-
 
 
 @app.route("/api/categories/<int:id>", methods=["DELETE"])
@@ -410,7 +412,7 @@ def get_addons():
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    columns = ["id", "name", "price"]
+    columns = ["id", "name", "price", "category"]
     data = [dict(zip(columns, row)) for row in rows]
     return jsonify(data)
 
@@ -419,13 +421,52 @@ def add_addon():
     data = request.get_json()
     name = data.get("name")
     price = data.get("price", 0)
+    category = data.get("category")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO addons (name, price) VALUES (%s, %s)", (name, price))
+    cur.execute("INSERT INTO addons (name, price, category) VALUES (%s, %s, %s) RETURNING id", (name, price, category))
+    
+    new_id = cur.fetchone()[0]
+
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"message": "Addon added"})
+    return jsonify({"id" : new_id,"name": name,"price": price,"category": category})
+
+@app.route("/api/addons/<int:addon_id>", methods=["PUT"])
+def update_addon(addon_id):
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price", 0)
+    category = data.get("category")
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # Update the record
+    cur.execute(
+        "UPDATE addons SET name = %s, price = %s, category = %s WHERE id = %s RETURNING id, name, price, category",
+        (name, price, category, addon_id)
+    )
+
+    updated = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    # If no record was updated (invalid id)
+    if not updated:
+        return jsonify({"error": "Addon not found"}), 404
+
+    # Return updated data
+    return jsonify({
+        "id": updated[0],
+        "name": updated[1],
+        "price": updated[2],
+        "category": updated[3]
+    }), 200
+
 
 @app.route("/api/addons/<int:id>", methods=["DELETE"])
 def delete_addon(id):
@@ -448,7 +489,7 @@ def get_sizes():
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    columns = ["id", "name", "price"]
+    columns = ["id", "name", "price", "category"]
     data = [dict(zip(columns, row)) for row in rows]
     return jsonify(data)
 
@@ -457,13 +498,50 @@ def add_size():
     data = request.get_json()
     name = data.get("name")
     price = data.get("price", 0)
+    category = data.get("category")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO sizes (name, price) VALUES (%s, %s)", (name, price))
+    cur.execute("INSERT INTO sizes (name, price, category) VALUES (%s, %s, %s) RETURNING id", (name, price, category))
+    
+    new_id = cur.fetchone()[0]
+
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"message": "Size added"})
+    return jsonify({"id": new_id,"name": name,"price": price, "category": category})
+
+@app.route("/api/sizes/<int:size_id>", methods=["PUT"])
+def update_size(size_id):
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price", 0)
+    category = data.get("category")
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE sizes
+        SET name = %s, price = %s, category = %s
+        WHERE id = %s
+        RETURNING id
+    """, (name, price, category, size_id))
+    
+    updated = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not updated:
+        return jsonify({"error": "Size not found"}), 404
+
+    return jsonify({
+        "id": size_id,
+        "name": name,
+        "price": price,
+        "category": category
+    })
+
 
 @app.route("/api/sizes/<int:id>", methods=["DELETE"])
 def delete_size(id):
@@ -496,7 +574,7 @@ def add_role():
     name = data.get("name")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO roles (name) VALUES (%s)", (name,))
+    cur.execute("INSERT INTO roles (name) VALUES (%s) RETURNING id", (name,))
     conn.commit()
     cur.close()
     conn.close()

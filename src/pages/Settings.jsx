@@ -162,7 +162,7 @@ function Modal({ open, onClose, children, title }) {
         e?.preventDefault?.();
         const name = (addonName || "").trim();
         const price = parseFloat(addonPrice);
-        const category = (addonCategory || "").trim().toLowerCase();
+        const category = (addonCategory.name || "").trim().toLowerCase();
 
         if (!name) return alert("Addon name required");
         if (isNaN(price) || price < 0) return alert("Enter a valid price");
@@ -234,7 +234,7 @@ function Modal({ open, onClose, children, title }) {
         e?.preventDefault?.();
         const name = (sizeName || "").trim();
         const price = parseFloat(sizePrice);
-        const category = (sizeCategory || "").trim().toLowerCase();
+        const category = (sizeCategory.name || "").trim().toLowerCase();
 
         if (!name) return alert("Size name required");
         if (isNaN(price) || price < 0) return alert("Enter a valid price");
@@ -557,15 +557,13 @@ function Modal({ open, onClose, children, title }) {
 
         {/* Roles */}
         <section className={`rounded-lg mb-4 transition-all overflow-hidden ${roleMinimize ? "max-h-[55px] shadow-md" : "max-h-[1000px]"}`}>
-            <div className="mb-4 bg-[#f8e7d6] rounded-lg shadow-md p-4">
-            <div className={`flex justify-between items-center transition-all ${roleMinimize ? "" : "mb-2"}`}>
+            <div className="mb-4 bg-[#f8e7d6] rounded-lg shadow-md">
+                <button className="flex w-full items-center justify-between p-4" aria-label="Toggle roles" onClick={() => setRoleMinimize((p) => !p)}>
                 <h4 className="font-semibold text-[#7f5539]">Roles</h4>
-                <button aria-label="Toggle roles" onClick={() => setRoleMinimize((p) => !p)}>
                 <IoIosArrowDown className={`transition-all ${roleMinimize ? "rotate-180" : ""}`} />
                 </button>
-            </div>
 
-            <div className={`flex gap-2 mb-2 transition-all ${roleMinimize ? "opacity-0 overflow-hidden" : "opacity-100 h-auto"}`}>
+            <div className={`flex gap-2 mb-2 px-4 pb-4 transition-all ${roleMinimize ? "opacity-0 overflow-hidden" : "opacity-100 h-auto"}`}>
                 <input
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
@@ -636,7 +634,7 @@ function Modal({ open, onClose, children, title }) {
         <Modal open={editModal.type === "addon"} onClose={() => setEditModal({ type: null, data: null })} title="Edit Addon">
             <input className="w-full border p-2 rounded mb-2" value={editModal.data?.name || ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, name: e.target.value } }))} />
             <select className="w-full border p-2 rounded mb-2" value={editModal.data?.category || ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, category: e.target.value } }))}>
-            {categories.map((c) => <option key={c} value={c}>{capitalize(c)}</option>)}
+            {categories.map((c) => <option key={c.id} value={c.name}>{capitalize(c.name)}</option>)}
             </select>
             <input className="w-full border p-2 rounded mb-3" type="number" value={editModal.data?.price ?? ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, price: e.target.value } }))} />
             <div className="flex justify-end gap-2">
@@ -649,7 +647,7 @@ function Modal({ open, onClose, children, title }) {
         <Modal open={editModal.type === "size"} onClose={() => setEditModal({ type: null, data: null })} title="Edit Size">
             <input className="w-full border p-2 rounded mb-2" value={editModal.data?.name || ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, name: e.target.value } }))} />
             <select className="w-full border p-2 rounded mb-2" value={editModal.data?.category || ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, category: e.target.value } }))}>
-            {categories.map((c) => <option key={c} value={c}>{capitalize(c)}</option>)}
+            {categories.map((c) => <option key={c.id} value={c.name}>{capitalize(c.name)}</option>)}
             </select>
             <input className="w-full border p-2 rounded mb-3" type="number" value={editModal.data?.price ?? ""} onChange={(e) => setEditModal((p) => ({ ...p, data: { ...p.data, price: e.target.value } }))} />
             <div className="flex justify-end gap-2">

@@ -261,9 +261,9 @@ export default function Products({ products, setProducts, categories, sizes, add
                                     required
                                     >
                                     <option value="">Select Category</option>
-                                    {categories.map((cat, idx) => (
-                                        <option key={idx} value={cat}>
-                                        {cat}
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.name}>
+                                        {cat.name}
                                         </option>
                                     ))}
                                     </select>
@@ -400,9 +400,9 @@ export default function Products({ products, setProducts, categories, sizes, add
                         className="border rounded p-2"
                         >
                         <option value="All">All Categories</option>
-                        {categories.map((cat, idx) => (
-                            <option key={idx} value={cat}>
-                            {cat}
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.name}>
+                            {cat.name}
                             </option>
                         ))}
                         </select>
