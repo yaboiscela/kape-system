@@ -10,7 +10,6 @@ export default function Products({ products, setProducts, categories, sizes, add
     const [categoryFilter, setCategoryFilter] = useState("All");
     
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const contextMenuRef = useRef(null);
     
     const [tempAddons, setTempAddons] = useState([]);
     
@@ -91,41 +90,26 @@ export default function Products({ products, setProducts, categories, sizes, add
             });
 
             const data = res.data;
-            setProducts(data.length > 0 ? data : defaultProducts);
+            setProducts(data.products || []);
             setError(null);
         } catch (err) {
             console.warn("Using default fallback products:", err.message);
             setError("Unable to load products from database.");
-            setProducts(defaultProducts); // ✅ fallback to sample data
+            setProducts([]); // ✅ fallback to sample data
         } finally {
             setLoading(false);
         }
     };
 
-    const loadSizeOptions = async () => {
-        try {
-        const res = await fetch("/db/getSizes.php");
-        if (!res.ok) throw new Error("Failed to fetch sizes");
-
-        const data = await res.json();
-        setSizes(data.length > 0 ? data : defaultSizes);
-        } catch (err) {
-        console.warn("Using default sizes:", err.message);
-        setSizes(defaultSizes);
-        }
-    };
-
     useEffect(() => {
         loadProducts();
-        loadSizeOptions();
     }, []);
 
-    // ----------------- Regular vs Sizes Logic -----------------
     const handleRegularToggle = (e) => {
         const checked = e.target.checked;
         setIsRegularSelected(checked);
         if (checked) {
-        setSelectedSizes([]); // Clear sizes if Regular is selected
+        setSelectedSizes([]); 
         }
     };
 
@@ -138,30 +122,6 @@ export default function Products({ products, setProducts, categories, sizes, add
         setSelectedSizes((prev) => prev.filter((name) => name !== sizeName));
         }
     };
-
-
-    // ----------------- Context Menu -----------------
-    const handleContextMenu = (e, product) => {
-        e.preventDefault();
-        setSelectedProduct(product);
-
-        if (contextMenuRef.current) {
-        contextMenuRef.current.style.top = `${e.pageY}px`;
-        contextMenuRef.current.style.left = `${e.pageX}px`;
-        contextMenuRef.current.style.display = "block";
-        }
-    };
-
-    const closeContextMenu = () => {
-        if (contextMenuRef.current) {
-        contextMenuRef.current.style.display = "none";
-        }
-    };
-
-    useEffect(() => {
-        document.addEventListener("click", closeContextMenu);
-        return () => document.removeEventListener("click", closeContextMenu);
-    }, []);
 
     // ----------------- Delete Product -----------------
     const handleDelete = async () => {
@@ -472,26 +432,6 @@ export default function Products({ products, setProducts, categories, sizes, add
                         </tbody>
                         </table>
                     </div>
-
-                    {/* Context Menu */}
-                    <ul
-                        ref={contextMenuRef}
-                        className="absolute bg-white shadow-lg rounded border border-gray-400 w-32 text-sm hidden"
-                        style={{ display: "none", position: "absolute", zIndex: 50 }}
-                    >
-                        <li
-                        className="px-4 py-2 bg-blue-200 hover:bg-blue-400 text-blue-600 hover:text-white cursor-pointer"
-                        onClick={handleEdit}
-                        >
-                        Edit
-                        </li>
-                        <li
-                        className="px-4 py-2 bg-red-200 hover:bg-red-400 text-red-600 hover:text-white cursor-pointer"
-                        onClick={handleDelete}
-                        >
-                        Delete
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>

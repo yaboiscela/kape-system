@@ -12,18 +12,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 
 export default function App() {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [roles, setRoles] = useState([
-    {
-      id: 1,
-      name: "Manager",
-      access: ["Dashboard", "Staff", "Products", "Settings", "Orders", "Cashier"],
-    },
-    {
-      id: 2,
-      name: "Barista",
-      access: ["Orders", "Cashier"],
-    },
-  ]);
+  const [roles, setRoles] = useState([]);
 
   const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -52,7 +41,9 @@ export default function App() {
             console.log("Fetched categories: %o", cats);
             setAddons(addons || []);
             setSizes(sizes || []);
+
             setRoles(roles || []);
+            console.log("Fetched roles: %o", roles);
             } catch (err) {
             console.error("Fetch tables failed:", err);
             alert("Failed to load data. Check console for details.");
@@ -138,7 +129,7 @@ export default function App() {
   }
 
   // 🧩 Access control by role
-  const userRoleObj = roles.find((r) => r.name === currentUser?.role);
+  const userRoleObj = roles.find((r) => r.name.toLowerCase === currentUser?.role.toLowerCase);
   const hasAccess = (page) =>
     !!userRoleObj && Array.isArray(userRoleObj.access) && userRoleObj.access.includes(page);
 

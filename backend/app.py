@@ -555,6 +555,29 @@ def delete_size(id):
 
 
 # ---------------- ROLES ROUTES ----------------
+@app.route("/api/roles", methods=["POST"])
+def add_role():
+    data = request.get_json()
+    name = data.get("name")
+    access = data.get("access", [])  # Expecting an array
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO roles (name, access) VALUES (%s, %s) RETURNING id, name, access",
+        (name, access),  # pass the Python list directly
+    )
+    new_id, new_name, new_access = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        "id": new_id,
+        "name": new_name,
+        "access": new_access
+    })
+
 
 @app.route("/api/roles", methods=["GET"])
 def get_roles():
@@ -568,17 +591,30 @@ def get_roles():
     data = [dict(zip(columns, row)) for row in rows]
     return jsonify(data)
 
-@app.route("/api/roles", methods=["POST"])
-def add_role():
+@app.route("/api/roles/<int:role_id>", methods=["PUT"])
+def update_role(role_id):
     data = request.get_json()
     name = data.get("name")
+    access = data.get("access", [])
+
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO roles (name) VALUES (%s) RETURNING id", (name,))
+    cur.execute(
+        "UPDATE roles SET name = %s, access = %s WHERE id = %s RETURNING id, name, access",
+        (name, access, role_id),
+    )
+    updated = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify({"message": "Role added"})
+
+    if updated:
+        return jsonify({
+            "message": "Role updated",
+            "role": {"id": updated[0], "name": updated[1], "access": updated[2]},
+        })
+    else:
+        return jsonify({"message": "Role not found"}), 404
 
 @app.route("/api/roles/<int:id>", methods=["DELETE"])
 def delete_role(id):

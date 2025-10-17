@@ -58,7 +58,7 @@ export default function Navigation({
     if (!currentUser) fetchCurrentUser();
   }, [currentUser, setCurrentUser, navigate]);
 
-  const getRoleObj = () => roles?.find((r) => r.name === currentUser?.role);
+  const getRoleObj = () => roles?.find((r) => r.name.toLowerCase() === currentUser?.role.toLowerCase());
   const hasAccess = (page) => {
     const roleObj = getRoleObj();
     return !!roleObj && Array.isArray(roleObj.access) && roleObj.access.includes(page);
