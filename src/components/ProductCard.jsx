@@ -1,9 +1,11 @@
 import { FaPlus } from "react-icons/fa6";
 import { useState } from "react";
 
-export default function ProductCard({ addons, name, category, sizes, handleAddToCart }) {
+export default function ProductCard({ product, handleAddToCart }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAddons, setSelectedAddons] = useState([]);
+
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
@@ -23,8 +25,8 @@ export default function ProductCard({ addons, name, category, sizes, handleAddTo
 
     const handleSizeSelect = (sizeKey) => {
         handleAddToCart({
-        name: name,
-        category,
+        name: product.name,
+        category: product.category,
         size: sizeKey,
         price: sizes[sizeKey],
         addons: selectedAddons, // ✅ include selected add-ons
@@ -38,12 +40,12 @@ export default function ProductCard({ addons, name, category, sizes, handleAddTo
         {/* Product Card */}
         <div className="relative bg-[#f8e7d6] shadow-lg p-2 md:scale-80 lg:scale-100 rounded-2xl w-70 h-min flex flex-col">
             <div className="h-40 w-full mb-2 rounded-t-xl bg-amber-50">
-            <img src="" alt="Product pic" />
+            <img src={`${API_URL}/uploads/${product.image}`} alt="Product pic" />
             </div>
             <div className="flex justify-between items-center p-4 text-[#7f5539]">
             <div>
-                <h2 className="text-2xl font-semibold">{name}</h2>
-                <p className="text-sm font-medium">{category}</p>
+                <h2 className="text-2xl font-semibold">{product.name}</h2>
+                <p className="text-sm font-medium">{product.category}</p>
             </div>
             <FaPlus
                 onClick={toggleModal}
@@ -56,12 +58,12 @@ export default function ProductCard({ addons, name, category, sizes, handleAddTo
         {isModalOpen && (
             <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg w-96">
-                <h2 className="text-4 text-4xl font-bold mb-4">{name}</h2>
+                <h2 className="text-4 text-4xl font-bold mb-4">{product.name}</h2>
 
                 {/* Add-ons Section */}
                 <h2 className="text-xl font-semibold mb-2">Select Add-ons</h2>
                 <div className="flex flex-col mb-4 text-xl">
-                {addons.map((addon) => (
+                {product.addons.map((addon) => (
                     <label key={addon.name} className="flex items-center">
                     <input
                         className="mr-2"

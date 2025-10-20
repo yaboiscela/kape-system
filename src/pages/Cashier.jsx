@@ -142,8 +142,8 @@ export default function Cashier({ orders, setOrders, products, categories }) {
                             >
                                 <option value="all">All</option>
                                 {categories.map((category) => (
-                                    <option key={category} value={category}>
-                                        {category}
+                                    <option key={category.id} value={category.name}>
+                                        {category.name}
                                     </option>
                                 ))}
                             </select>
@@ -156,10 +156,7 @@ export default function Cashier({ orders, setOrders, products, categories }) {
                             filteredProducts.map((product) => (
                                 <ProductCard
                                     key={product.id}
-                                    name={product.name}
-                                    sizes={product.size}
-                                    category={product.category}
-                                    addons={product.addons}
+                                    product={product}
                                     handleAddToCart={handleAddToCart}
                                 />
                             ))

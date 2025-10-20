@@ -282,7 +282,7 @@ def add_product():
             INSERT INTO products (name, category, image, size, addons)
             VALUES (%s, %s, %s, %s, %s)
             RETURNING id
-        """, (name, category, filename, json.loads(size), json.loads(addons)))
+        """, (name, category, filename, json.dumps(size), json.dumps(addons)))
 
         product_id = cur.fetchone()[0]
         conn.commit()
@@ -294,6 +294,8 @@ def add_product():
     except Exception as e:
         print("Error in /api/products:", e)
         return jsonify({"error": str(e)}), 500
+
+import json
 
 # ---------------- GET PRODUCTS ----------------
 @app.route("/api/products", methods=["GET"])
@@ -307,23 +309,46 @@ def get_products():
         cur.close()
         conn.close()
 
-        products = [
-            {
+        products = []
+        for r in rows:
+            # Safely parse JSON fields if they're text
+            size = r[4]
+            addons = r[5]
+
+            # Handle cases where DB returns strings instead of dict/list
+            if isinstance(size, str):
+                try:
+                    size = json.loads(size)
+                except:
+                    pass
+
+            if isinstance(addons, str):
+                try:
+                    addons = json.loads(addons)
+                except:
+                    pass
+
+            products.append({
                 "id": r[0],
                 "name": r[1],
                 "category": r[2],
                 "image": r[3],
-                "size": r[4],
-                "addons": r[5],
-            }
-            for r in rows
-        ]
+                "size": size,
+                "addons": addons,
+            })
 
         return jsonify(products), 200
 
     except Exception as e:
         print("Error in /api/products (GET):", e)
         return jsonify({"error": str(e)}), 500
+
+from flask import send_from_directory
+
+@app.route("/uploads/<path:filename>")
+def get_uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
     
 # In-memory data simulation
 categories = ["coffee", "tea"]

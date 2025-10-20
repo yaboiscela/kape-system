@@ -3,9 +3,6 @@ import axios from "axios";
 
 export default function Products({ products, setProducts, categories, sizes, addons }) {
     // ----------------- States -----------------
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     const [search, setSearch] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
     
@@ -20,6 +17,8 @@ export default function Products({ products, setProducts, categories, sizes, add
     // Selected category for new product
     const [selectedCategory, setSelectedCategory] = useState("");
 
+    const API_URL = import.meta.env.VITE_API_URL || "";
+
     // ----------------- Add Product -----------------
     const handleAddProduct = async (e) => {
         e.preventDefault();
@@ -31,10 +30,12 @@ export default function Products({ products, setProducts, categories, sizes, add
             id: products.length + 1,
             name: formData.get("productName"),
             category: selectedCategory,
-            image: "",
+            image: preview,
             size: {},
             addons: tempAddons,
         };
+
+        console.log("Adding product:", newProduct);
 
         if (isRegularSelected) {
             const regularPrice = formData.get("regularPrice");
@@ -78,32 +79,6 @@ export default function Products({ products, setProducts, categories, sizes, add
         setTempAddons([]);
         e.target.reset();
         };
-
-        // ----------------- Load Data -----------------
-    const loadProducts = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem("token");
-
-            const res = await axios.get(`${API_URL}/api/products`, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
-
-            const data = res.data;
-            setProducts(data.products || []);
-            setError(null);
-        } catch (err) {
-            console.warn("Using default fallback products:", err.message);
-            setError("Unable to load products from database.");
-            setProducts([]); // ✅ fallback to sample data
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadProducts();
-    }, []);
 
     const handleRegularToggle = (e) => {
         const checked = e.target.checked;
@@ -185,13 +160,13 @@ export default function Products({ products, setProducts, categories, sizes, add
         }
     }
 
+    const capitalize = (s) =>
+        typeof s === "string" ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
     // ----------------- UI -----------------
     return (
         <div className="w-full" >
             <h2 className="pl-10 text-3xl font-bold text-[#7f5539] mb-4">Products</h2>
-                {/* Status Messages */}
-                {loading && <p className="italic text-gray-500">Loading products...</p>}
-                {error && <p className="text-red-500">{error}</p>}
             <div className="flex flex-col lg:flex-row gap-6 w-full">
                 {/* Add Product Form */}
                 <form
@@ -223,7 +198,7 @@ export default function Products({ products, setProducts, categories, sizes, add
                                     <option value="">Select Category</option>
                                     {categories.map((cat) => (
                                         <option key={cat.id} value={cat.name}>
-                                        {cat.name}
+                                        {capitalize(cat.name)}
                                         </option>
                                     ))}
                                     </select>
@@ -332,7 +307,7 @@ export default function Products({ products, setProducts, categories, sizes, add
                                     }
                                 }}
                                 />
-                                {addon.name} (₱{addon.price})
+                                {capitalize(addon.name)} (₱{addon.price})
                             </label>
                             ))
                         ) : (
@@ -362,7 +337,7 @@ export default function Products({ products, setProducts, categories, sizes, add
                         <option value="All">All Categories</option>
                         {categories.map((cat) => (
                             <option key={cat.id} value={cat.name}>
-                            {cat.name}
+                            {capitalize(cat.name)}
                             </option>
                         ))}
                         </select>

@@ -17,41 +17,48 @@ export default function App() {
   const API_URL = import.meta.env.VITE_API_URL || "";
 
   useEffect(() => {
-        const fetchAllData = async () => {
-            try {
-            const [catRes, addonRes, sizeRes, roleRes] = await Promise.all([
-                fetch(`${API_URL}/api/categories`),
-                fetch(`${API_URL}/api/addons`),
-                fetch(`${API_URL}/api/sizes`),
-                fetch(`${API_URL}/api/roles`),
-            ]);
+    const fetchAllData = async () => {
+      try {
+        const token = localStorage.getItem("token"); // or sessionStorage, depending on your auth setup
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            if (!catRes.ok || !addonRes.ok || !sizeRes.ok || !roleRes.ok) {
-                throw new Error("Failed to fetch one or more tables");
-            }
+        const [catRes, addonRes, sizeRes, roleRes, prodRes] = await Promise.all([
+          fetch(`${API_URL}/api/categories`, { headers }),
+          fetch(`${API_URL}/api/addons`, { headers }),
+          fetch(`${API_URL}/api/sizes`, { headers }),
+          fetch(`${API_URL}/api/roles`, { headers }),
+          fetch(`${API_URL}/api/products`, { headers }),
+        ]);
 
-            const [cats, addons, sizes, roles] = await Promise.all([
-                catRes.json(),
-                addonRes.json(),
-                sizeRes.json(),
-                roleRes.json(),
-            ]);
+        if (![catRes, addonRes, sizeRes, roleRes, prodRes].every(r => r.ok)) {
+          throw new Error("Failed to fetch one or more tables");
+        }
 
-            setCategories(cats || []);
-            console.log("Fetched categories: %o", cats);
-            setAddons(addons || []);
-            setSizes(sizes || []);
+        const [cats, addons, sizes, roles, products] = await Promise.all([
+          catRes.json(),
+          addonRes.json(),
+          sizeRes.json(),
+          roleRes.json(),
+          prodRes.json(),
+        ]);
 
-            setRoles(roles || []);
-            console.log("Fetched roles: %o", roles);
-            } catch (err) {
-            console.error("Fetch tables failed:", err);
-            alert("Failed to load data. Check console for details.");
-            }
-        };
+        setCategories(cats || []);
+        setAddons(addons || []);
+        setSizes(sizes || []);
+        setProducts(products || []);
+        setRoles(roles || []);
 
-        fetchAllData();
-    }, []);
+        console.log("Fetched data:", { cats, addons, sizes, roles, products });
+
+      } catch (err) {
+        console.error("Fetch tables failed:", err);
+        alert("Failed to load data. Check console for details.");
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
 
   const [products, setProducts] = useState([]);
   const [addons, setAddons] = useState([]);
