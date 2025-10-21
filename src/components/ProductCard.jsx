@@ -28,7 +28,7 @@ export default function ProductCard({ product, handleAddToCart }) {
         name: product.name,
         category: product.category,
         size: sizeKey,
-        price: sizes[sizeKey],
+        price: product.size[sizeKey],
         addons: selectedAddons, // ✅ include selected add-ons
         quantity: 1,
         });
@@ -39,7 +39,7 @@ export default function ProductCard({ product, handleAddToCart }) {
         <div>
         {/* Product Card */}
         <div className="relative bg-[#f8e7d6] shadow-lg p-2 md:scale-80 lg:scale-100 rounded-2xl w-70 h-min flex flex-col">
-            <div className="h-40 w-full mb-2 rounded-t-xl bg-amber-50 overflow-hidden">
+            <div className="h-44 w-full rounded-t-xl bg-amber-50 overflow-hidden">
             <img src={`${API_URL}/uploads/${product.image}`} alt="Product pic"/>
             </div>
             <div className="flex justify-between items-center p-4 text-[#7f5539]">
@@ -71,7 +71,7 @@ export default function ProductCard({ product, handleAddToCart }) {
                         checked={selectedAddons.includes(addon)}
                         onChange={() => handleAddonToggle(addon)}
                     />
-                    {addon.name} - ₱{addon.price.toFixed(2)}
+                    {addon.name} - ₱{Number(addon.price).toFixed(2)}
                     </label>
                 ))}
                 </div>
@@ -79,14 +79,14 @@ export default function ProductCard({ product, handleAddToCart }) {
                 {/* Size Section */}
                 <h2 className="text-xl font-semibold mb-4">Select Size</h2>
                 <div className="flex flex-col space-y-4">
-                {Object.keys(sizes).map((sizeKey) => (
+                {Object.keys(product.size).map((sizeKey) => (
                     <button
                     key={sizeKey}
                     onClick={() => handleSizeSelect(sizeKey)}
                     className="w-full p-3 text-2xl font-semibold rounded-lg shadow-md/20 bg-[#f8e7d6] text-[#7f5539] hover:bg-[#b08968] hover:text-white transition-colors"
                     >
                     {sizeKey.charAt(0).toUpperCase() + sizeKey.slice(1)} - ₱
-                    {sizes[sizeKey].toFixed(2)}
+                    {Number(product.size[sizeKey]).toFixed(2)}
                     </button>
                 ))}
                 </div>

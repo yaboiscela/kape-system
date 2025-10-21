@@ -377,7 +377,7 @@ def add_category():
     name = data.get("name")
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO categories (name) VALUES (%s)", (name))
+    cur.execute("INSERT INTO categories (name) VALUES (%s) RETURNING id", (name,))
 
     new_id = cur.fetchone()[0]
 

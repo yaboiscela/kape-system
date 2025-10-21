@@ -191,7 +191,7 @@ export default function Cashier({ orders, setOrders, products, categories }) {
                                                     <ul className="ml-4 list-disc text-gray-600 font-medium">
                                                         {item.addons.map((addon, i) => (
                                                             <li key={i}>
-                                                                {addon.name} - ₱{addon.price.toFixed(2)}
+                                                                {addon.name} - ₱{Number(addon.price).toFixed(2)}
                                                             </li>
                                                         ))}
                                                     </ul>

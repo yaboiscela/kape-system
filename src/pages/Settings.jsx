@@ -164,6 +164,8 @@ function Modal({ open, onClose, children, title }) {
         const price = parseFloat(addonPrice);
         const category = (addonCategory.name || "").trim().toLowerCase();
 
+        console.log({name, price, category});
+
         if (!name) return alert("Addon name required");
         if (isNaN(price) || price < 0) return alert("Enter a valid price");
         if (!category) return alert("Select a category");
@@ -506,7 +508,6 @@ function Modal({ open, onClose, children, title }) {
                 placeholder="Size Name"
                 className="border border-[#7f5539] bg-white rounded p-2 flex-1"
                 />
-
                 <select value={sizeCategory} onChange={(e) => setSizeCategory(e.target.value)} className="border border-[#7f5539] text-[#7f5539] bg-white rounded p-2 w-50">
                 {categories.map((category) => (
                     <option key={category.id} value={category.name}>
