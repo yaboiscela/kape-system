@@ -39,8 +39,8 @@ export default function ProductCard({ product, handleAddToCart }) {
         <div>
         {/* Product Card */}
         <div className="relative bg-[#f8e7d6] shadow-lg p-2 md:scale-80 lg:scale-100 rounded-2xl w-70 h-min flex flex-col">
-            <div className="h-40 w-full mb-2 rounded-t-xl bg-amber-50">
-            <img src={`${API_URL}/uploads/${product.image}`} alt="Product pic" />
+            <div className="h-40 w-full mb-2 rounded-t-xl bg-amber-50 overflow-hidden">
+            <img src={`${API_URL}/uploads/${product.image}`} alt="Product pic"/>
             </div>
             <div className="flex justify-between items-center p-4 text-[#7f5539]">
             <div>

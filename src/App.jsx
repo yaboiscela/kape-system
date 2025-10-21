@@ -12,8 +12,17 @@ const Login = React.lazy(() => import("./pages/Login"));
 
 export default function App() {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [addons, setAddons] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [sizes, setSizes] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [roles, setRoles] = useState([]);
-
+  const [currentUser, setCurrentUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [loading, setLoading] = useState(true);
   const API_URL = import.meta.env.VITE_API_URL || "";
 
   useEffect(() => {
@@ -55,23 +64,14 @@ export default function App() {
         alert("Failed to load data. Check console for details.");
       }
     };
+    
+    if (currentUser) {
+      fetchAllData();
+    }
 
-    fetchAllData();
-  }, []);
+  }, [currentUser, API_URL]);
 
-
-  const [products, setProducts] = useState([]);
-  const [addons, setAddons] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [currentUser, setCurrentUser] = useState(() => {
-    // Try restoring from localStorage
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [loading, setLoading] = useState(true);
-
+  
 
   // ✅ Verify JWT on mount or refresh
   useEffect(() => {
