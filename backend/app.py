@@ -12,6 +12,7 @@ from psycopg2.errors import UniqueViolation
 import random, string
 from werkzeug.utils import secure_filename
 import json
+from flask_socketio import SocketIO, emit
 
 load_dotenv()
 
@@ -661,6 +662,8 @@ def get_orders():
     data = [dict(zip(columns, row)) for row in rows]
     return jsonify(data)
 
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 @app.route("/api/orders", methods=["POST"])
 def add_order():
     data = request.get_json()
@@ -669,7 +672,7 @@ def add_order():
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO orders (customer_name, payment_method, items, "totalAmount", status)
+        INSERT INTO orders (customer_name, "paymentMethod", items, total_amount, status)
         VALUES (%s, %s, %s, %s, %s)
         RETURNING id
     """, (
@@ -685,9 +688,18 @@ def add_order():
     cur.close()
     conn.close()
 
-    return jsonify({"message": "Order added successfully", "order_id": order_id}), 201
+    # 🔥 Emit event to all clients that a new order was added
+    socketio.emit("new_order", {"order_id": order_id, "message": "New order added"})
 
+    return jsonify({"message": "Order added successfully", "order_id": order_id}), 201
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    app.run(debug=os.getenv("FLASK_DEBUG") == "True", port=port)
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        debug=os.getenv("FLASK_DEBUG") == "True",
+        allow_unsafe_werkzeug=True  # optional: avoids warnings in dev
+    )
+

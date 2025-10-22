@@ -1,48 +1,57 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 export default function Orders({ orders, setOrders }) {
     const [loading, setLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL || "";
+    const socket = io(`${API_URL}`, {
+        transports: ["websocket"],
+        withCredentials: true,
+    });
 
     // ----------------- Load Orders -----------------
-        useEffect(() => {
-        if (orders.length > 0) {
-            setLoading(false);
-            return;
-        }
+    useEffect(() => {
 
-        axios.get(`${API_URL}/api/orders`) // change to your backend URL
+        // Load initial orders
+        axios.get(`${API_URL}/api/orders`)
             .then((res) => {
-                const updatedData = res.data.map((order, index) => ({
-                    ...order,
-                    customerNumber: index + 1,
-                    paymentMethod: order.paymentMethod || "Cash",
-                }));
-                setOrders(updatedData);
-                console.log("Orders: "+ orders);
+                setOrders(res.data);
+                console.log(res.data);
                 setLoading(false);
             })
             .catch((err) => {
                 console.error("Error fetching orders:", err);
+                console.log("API_URL used:", API_URL);
                 setLoading(false);
-            })
-    }, [orders, setOrders]);
+            });
+
+        // 🔥 Listen for new order events
+        socket.on("new_order", (data) => {
+            console.log("New order event received:", data);
+            // Option 1: Re-fetch orders from backend
+            axios.get(`${API_URL}/api/orders`)
+                .then((res) => setOrders(res.data))
+                .catch((err) => console.error("Error refreshing orders:", err));
+        });
+
+        // Cleanup on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, [API_URL, setOrders]);
 
     // ----------------- Process Order -----------------
-    const processOrder = (orderID) => {
-        const updatedOrders = orders.map((order) =>
-            order.orderID === orderID
-                ? { ...order, status: "Completed", date: new Date().toISOString() }
-                : order
-        );
-        setOrders(updatedOrders);
-
-        fetch("/db/orders_update.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderID, status: "Completed" }),
-        }).catch((err) => console.error("Error updating order:", err));
+    const processOrder = async (orderID) => {
+        try {
+            await axios.put(`${API_URL}/api/orders/${orderID}`, { status: "Completed" });
+            const updatedOrders = orders.map((order) =>
+                order.id === orderID ? { ...order, status: "Completed" } : order
+            );
+            setOrders(updatedOrders);
+        } catch (err) {
+            console.error("Error updating order:", err);
+        }
     };
 
     // ----------------- Cancel Order (with PIN) -----------------
