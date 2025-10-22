@@ -5,13 +5,13 @@ import { io } from "socket.io-client";
 export default function Orders({ orders, setOrders }) {
     const [loading, setLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL || "";
-    const socket = io(`${API_URL}`, {
-        transports: ["websocket"],
-        withCredentials: true,
-    });
-
+    
     // ----------------- Load Orders -----------------
     useEffect(() => {
+        const socket = io(API_URL, {
+            transports: ["websocket"],
+            withCredentials: false, // usually should be false unless you’re using cookies
+        });
 
         // Load initial orders
         axios.get(`${API_URL}/api/orders`)

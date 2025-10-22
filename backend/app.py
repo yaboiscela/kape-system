@@ -672,7 +672,7 @@ def add_order():
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO orders (customer_name, "paymentMethod", items, total_amount, status)
+        INSERT INTO orders (customer_name, "paymentMethod", items, "totalAmount", status)
         VALUES (%s, %s, %s, %s, %s)
         RETURNING id
     """, (
@@ -695,11 +695,6 @@ def add_order():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    socketio.run(
-        app,
-        host="0.0.0.0",
-        port=port,
-        debug=os.getenv("FLASK_DEBUG") == "True",
-        allow_unsafe_werkzeug=True  # optional: avoids warnings in dev
-    )
+    socketio.run(app, host="0.0.0.0", port=port, debug=os.getenv("FLASK_DEBUG") == "True")
+
 
