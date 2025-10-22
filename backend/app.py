@@ -669,7 +669,7 @@ def add_order():
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO orders (customer_name, payment_method, items, total_amount, status)
+        INSERT INTO orders (customer_name, payment_method, items, "totalAmount", status)
         VALUES (%s, %s, %s, %s, %s)
         RETURNING id
     """, (
