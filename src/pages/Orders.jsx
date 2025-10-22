@@ -31,7 +31,10 @@ export default function Orders({ orders, setOrders }) {
             console.log("New order event received:", data);
             // Option 1: Re-fetch orders from backend
             axios.get(`${API_URL}/api/orders`)
-                .then((res) => setOrders(res.data))
+                .then((res) => {
+                    setOrders(res.data) 
+                    console.log(res.data);
+                })
                 .catch((err) => console.error("Error refreshing orders:", err));
         });
 
