@@ -1,11 +1,14 @@
 import { useState } from "react";
 import ProductCard from "../components/ProductCard";
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
+import axios from "axios";
 
 export default function Cashier({ orders, setOrders, products, categories }) {
     const [cart, setCart] = useState([]);
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("all");
+
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
     // Modal states
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
@@ -74,26 +77,35 @@ export default function Cashier({ orders, setOrders, products, categories }) {
     };
 
     // ----------------- Place Order -----------------
-    const handleOrder = (e) => {
+    const handleOrder = async (e) => {
         e.preventDefault();
 
+        // Validate payment method
         if (!paymentMethod.trim()) {
             alert("Please select a payment method.");
             return;
         }
 
+        // Generate next order ID based on existing orders
         const nextOrderID = (orders?.length || 0) + 1;
 
+        // Compute total amount including addons
+        const totalAmount = cart
+            .reduce((total, item) => {
+                const itemTotal = (item.price + calcAddonTotal(item.addons)) * item.quantity;
+                return total + itemTotal;
+            }, 0)
+            .toFixed(2);
+
+        // Build order object
         const newOrder = {
             orderID: nextOrderID,
             customerNumber: nextOrderID,
-            totalAmount: cart
-                .reduce((total, item) => total + (item.price + calcAddonTotal(item.addons)) * item.quantity, 0)
-                .toFixed(2),
+            totalAmount,
             paymentMethod,
             status: "Pending",
             date: new Date().toISOString(),
-            items: cart.map(item => ({
+            items: cart.map((item) => ({
                 productName: item.name,
                 size: item.size || "Regular",
                 qty: item.quantity,
@@ -102,16 +114,26 @@ export default function Cashier({ orders, setOrders, products, categories }) {
             })),
         };
 
-        setOrders(prevOrders => [...prevOrders, newOrder]);
+        try {
+            // Send order to Flask backend
+            const res = await axios.post(`${API_URL}/api/orders`, newOrder);
+            console.log("Order saved to backend:", res.data);
 
-        console.log("Order placed:", newOrder);
+            // Update frontend state
+            setOrders((prevOrders) => [...prevOrders, newOrder]);
 
-        // Reset
-        setCart([]);
-        setPaymentMethod("");
-        toggleConfirmationModal();
-        setIsConfirmed(true);
+            // Reset UI state
+            setCart([]);
+            setPaymentMethod("");
+            toggleConfirmationModal();
+            setIsConfirmed(true);
+
+        } catch (error) {
+            console.error("Error submitting order:", error);
+            alert("Failed to submit order. Please try again.");
+        }
     };
+
 
     // Calculate total price of addons for each item
     const calcAddonTotal = (addons = []) => {

@@ -1,70 +1,32 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Orders({ orders, setOrders }) {
     const [loading, setLoading] = useState(true);
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
     // ----------------- Load Orders -----------------
-    useEffect(() => {
+        useEffect(() => {
         if (orders.length > 0) {
             setLoading(false);
             return;
         }
 
-        fetch("/db/orders_get.php")
-            .then((res) => res.json())
-            .then((data) => {
-                const updatedData = data.map((order, index) => ({
+        axios.get(`${API_URL}/api/orders`) // change to your backend URL
+            .then((res) => {
+                const updatedData = res.data.map((order, index) => ({
                     ...order,
                     customerNumber: index + 1,
                     paymentMethod: order.paymentMethod || "Cash",
                 }));
                 setOrders(updatedData);
+                console.log("Orders: "+ orders);
                 setLoading(false);
             })
-            .catch(() => {
-                // Fallback sample data
-                setOrders([
-                    {
-                        orderID: 1,
-                        customerNumber: 1,
-                        totalAmount: " 210.00",
-                        paymentMethod: "Cash",
-                        status: "Pending",
-                        date: "2025-09-13T09:30:00",
-                        items: [
-                            {
-                                productName: "Cappuccino",
-                                qty: 2,
-                                addons: [{ name: "Extra Shot", price: 10.0 }],
-                                price: 100,
-                            },
-                            {
-                                productName: "Blueberry Muffin",
-                                qty: 1,
-                                addons: [],
-                                price: 50,
-                            },
-                        ],
-                    },
-                    {
-                        orderID: 2,
-                        customerNumber: 2,
-                        totalAmount: "180.00",
-                        paymentMethod: "GCash",
-                        status: "Completed",
-                        date: "2025-09-12T15:20:00",
-                        items: [
-                            {
-                                productName: "Latte",
-                                qty: 1,
-                                addons: [{ name: "Whipped Cream", price: 10.0 }],
-                                price: 180,
-                            },
-                        ],
-                    },
-                ]);
+            .catch((err) => {
+                console.error("Error fetching orders:", err);
                 setLoading(false);
-            });
+            })
     }, [orders, setOrders]);
 
     // ----------------- Process Order -----------------
@@ -160,10 +122,10 @@ export default function Orders({ orders, setOrders }) {
                                 ) : (
                                     pendingOrders.map((order) => (
                                         <tr
-                                            key={order.orderID}
+                                            key={order.id}
                                             className="hover:bg-[#feebc0] cursor-pointer text-center odd:bg-[#fef6e4] transition"
                                         >
-                                            <td className="py-2 px-4">{order.orderID}</td>
+                                            <td className="py-2 px-4">{order.id}</td>
                                             <td className="py-2 px-4">{order.customerNumber}</td>
                                             <td className="py-2 px-4">
                                                 {order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)}
@@ -234,8 +196,8 @@ export default function Orders({ orders, setOrders }) {
                                     </tr>
                                 ) : (
                                     completedOrders.map((order) => (
-                                        <tr key={order.orderID} className="transition">
-                                            <td className="py-2 px-4">{order.orderID}</td>
+                                        <tr key={order.id} className="transition">
+                                            <td className="py-2 px-4">{order.id}</td>
                                             <td className="py-2 px-4">{order.customerNumber}</td>
                                             <td className="py-2 px-4">{order.paymentMethod}</td>
                                             <td className="py-2 px-4">{formatDateTime(order.date)}</td>

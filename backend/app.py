@@ -651,6 +651,42 @@ def delete_role(id):
     conn.close()
     return jsonify({"message": "Role deleted"})
 
+@app.route("/api/orders", methods=["GET"])
+def get_orders():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM orders ORDER BY id DESC")
+    rows = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    data = [dict(zip(columns, row)) for row in rows]
+    return jsonify(data)
+
+@app.route("/api/orders", methods=["POST"])
+def add_order():
+    data = request.get_json()
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO orders (customer_name, payment_method, items, total_amount, status)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        f"Customer #{data['customerNumber']}",
+        data['paymentMethod'],
+        json.dumps(data['items']),
+        data['totalAmount'],
+        data['status']
+    ))
+
+    conn.commit()
+    order_id = cur.fetchone()[0]
+    cur.close()
+    conn.close()
+
+    return jsonify({"message": "Order added successfully", "order_id": order_id}), 201
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
