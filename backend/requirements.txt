@@ -16,3 +16,4 @@ Werkzeug==2.3.8
 gunicorn==22.0.0
 flask-jwt-extended==4.4.4
 flask-socketio==5.3.6
+eventlet==0.33.3
