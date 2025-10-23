@@ -13,6 +13,13 @@ export default function Orders({ orders, setOrders }) {
             withCredentials: false, // usually should be false unless you’re using cookies
         });
 
+        socket.on("connect", () => {
+        console.log("✅ Connected to socket server");
+        });
+        socket.on("connect_error", (err) => {
+        console.error("❌ Socket connection error:", err);
+        });
+
         // Load initial orders
         axios.get(`${API_URL}/api/orders`)
             .then((res) => {
