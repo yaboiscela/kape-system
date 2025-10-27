@@ -3,7 +3,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 export default function Orders({ orders, setOrders }) {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const API_URL = import.meta.env.VITE_API_URL || "";
     
     // ----------------- Load Orders -----------------
@@ -19,19 +19,6 @@ export default function Orders({ orders, setOrders }) {
         socket.on("connect_error", (err) => {
         console.error("❌ Socket connection error:", err);
         });
-
-        // Load initial orders
-        axios.get(`${API_URL}/api/orders`)
-            .then((res) => {
-                setOrders(res.data);
-                console.log(res.data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Error fetching orders:", err);
-                console.log("API_URL used:", API_URL);
-                setLoading(false);
-            });
 
         // 🔥 Listen for new order events
         socket.on("new_order", (data) => {
@@ -118,7 +105,7 @@ export default function Orders({ orders, setOrders }) {
                 {/* Pending Orders Table */}
                 <div>
                     <h2 className="text-2xl font-bold text-[#7f5539] mb-4">Pending Orders</h2>
-                    <div className="overflow-x-auto rounded-2xl border border-[#b08968]">
+                    <div className="overflow-x-auto rounded-2xl border h-200 border-[#b08968]">
                         <table className="min-w-full">
                             <thead className="bg-[#7f5539] text-white">
                                 <tr>
@@ -194,7 +181,7 @@ export default function Orders({ orders, setOrders }) {
                 {/* Completed Orders Table */}
                 <div>
                     <h2 className="text-2xl font-bold text-[#7f5539] mb-4">Completed Orders</h2>
-                    <div className="overflow-x-auto rounded-2xl border border-[#b08968]">
+                    <div className="overflow-x-auto rounded-2xl border bg-[#f8e7d6] h-200 border-[#b08968]">
                         <table className="min-w-full text-center">
                             <thead className="bg-[#7f5539] text-white">
                                 <tr>

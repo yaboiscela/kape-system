@@ -12,6 +12,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 
 export default function App() {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [staff, setStaff] = useState([]);
   const [products, setProducts] = useState([]);
   const [addons, setAddons] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -31,24 +32,28 @@ export default function App() {
         const token = localStorage.getItem("token"); // or sessionStorage, depending on your auth setup
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const [catRes, addonRes, sizeRes, roleRes, prodRes] = await Promise.all([
+        const [catRes, addonRes, sizeRes, roleRes, prodRes, userRes, orderRes] = await Promise.all([
           fetch(`${API_URL}/api/categories`, { headers }),
           fetch(`${API_URL}/api/addons`, { headers }),
           fetch(`${API_URL}/api/sizes`, { headers }),
           fetch(`${API_URL}/api/roles`, { headers }),
           fetch(`${API_URL}/api/products`, { headers }),
+          fetch(`${API_URL}/api/users`, { headers }),
+          fetch(`${API_URL}/api/orders`, { headers }),
         ]);
 
-        if (![catRes, addonRes, sizeRes, roleRes, prodRes].every(r => r.ok)) {
+        if (![catRes, addonRes, sizeRes, roleRes, prodRes, userRes, orderRes].every(r => r.ok)) {
           throw new Error("Failed to fetch one or more tables");
         }
 
-        const [cats, addons, sizes, roles, products] = await Promise.all([
+        const [cats, addons, sizes, roles, products, staffs, orders] = await Promise.all([
           catRes.json(),
           addonRes.json(),
           sizeRes.json(),
           roleRes.json(),
           prodRes.json(),
+          userRes.json(),
+          orderRes.json(),
         ]);
 
         setCategories(cats || []);
@@ -56,6 +61,8 @@ export default function App() {
         setSizes(sizes || []);
         setProducts(products || []);
         setRoles(roles || []);
+        setStaff(staffs || []);
+        setOrders(orders || []);
 
         console.log("Fetched data:", { cats, addons, sizes, roles, products });
 
@@ -162,9 +169,9 @@ export default function App() {
         >
           <Routes>
             {hasAccess("Dashboard") && (
-              <Route path="/" element={<Dashboard isMinimized={isMinimized} />} />
+              <Route path="/" element={<Dashboard isMinimized={isMinimized} staff={staff} products={products} orders={orders} />} />
             )}
-            {hasAccess("Staff") && <Route path="/staff" element={<Staff roles={roles} />} />}
+            {hasAccess("Staff") && <Route path="/staff" element={<Staff roles={roles} staff={staff} setStaff={setStaff} />} />}
             {hasAccess("Products") && (
               <Route
                 path="/products"

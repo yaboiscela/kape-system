@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-export default function Staff({ roles }) {
+export default function Staff({ roles, staff, setStaff }) {
 
-    const [staff, setStaff] = useState([]);
     const [visiblePasswords, setVisiblePasswords] = useState({});
 
     const API_URL = import.meta.env.VITE_API_URL || "";
